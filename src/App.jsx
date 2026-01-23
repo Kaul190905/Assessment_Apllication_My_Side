@@ -7,7 +7,11 @@ import Profile from './pages/Profile';
 import RulesPage from './pages/RulesPage';
 import { ToastProvider } from './components/Toast';
 import { ThemeProvider } from './components/ThemeProvider';
+<<<<<<< HEAD
 // Assessments now fetched from backend via Dashboard component
+=======
+import { assessments } from './data/assessments';
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
 import './styles/global.css';
 
 function App() {
@@ -76,8 +80,11 @@ function App() {
     setUserType(null);
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('userType');
+<<<<<<< HEAD
     localStorage.removeItem('authToken');
     localStorage.removeItem('userData');
+=======
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
   };
 
   // Start a test - navigate to rules page first
@@ -123,6 +130,10 @@ function App() {
                       onThemeToggle={handleThemeToggle}
                       userType={userType}
                       onLogout={handleLogout}
+<<<<<<< HEAD
+=======
+                      assessments={assessments}
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
                       onStartTest={handleStartTest}
                     />
                   ) : (
@@ -168,6 +179,10 @@ function App() {
                       onThemeToggle={handleThemeToggle}
                       userType={userType}
                       onLogout={handleLogout}
+<<<<<<< HEAD
+=======
+                      assessments={assessments}
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
                     />
                   ) : (
                     <Navigate to="/login" replace />

@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
+<<<<<<< HEAD
 import { authService } from '../services/testService';
+=======
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
 
 const Login = ({ isDark, onThemeToggle, onLogin }) => {
     const navigate = useNavigate();
@@ -13,7 +16,11 @@ const Login = ({ isDark, onThemeToggle, onLogin }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
+<<<<<<< HEAD
     // Demo credentials (kept for fallback)
+=======
+    // Demo credentials
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
     const DEMO_CREDENTIALS = { id: 'STU2025001', password: 'student123' };
 
     const handleInputChange = (e) => {
@@ -26,11 +33,16 @@ const Login = ({ isDark, onThemeToggle, onLogin }) => {
         setShowPassword(prev => !prev);
     };
 
+<<<<<<< HEAD
     const handleSubmit = async (e) => {
+=======
+    const handleSubmit = (e) => {
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
         e.preventDefault();
         setIsLoading(true);
         setError('');
 
+<<<<<<< HEAD
         try {
             // Try real API authentication first
             const response = await authService.login(formData.id, formData.password);
@@ -59,6 +71,18 @@ const Login = ({ isDark, onThemeToggle, onLogin }) => {
         } finally {
             setIsLoading(false);
         }
+=======
+        // Simulate login delay
+        setTimeout(() => {
+            if (formData.id === DEMO_CREDENTIALS.id && formData.password === DEMO_CREDENTIALS.password) {
+                onLogin('student');
+                navigate('/');
+            } else {
+                setError('Invalid credentials. Please try again.');
+            }
+            setIsLoading(false);
+        }, 800);
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
     };
 
     // Eye icons for password visibility toggle

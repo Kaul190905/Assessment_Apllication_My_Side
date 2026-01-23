@@ -8,9 +8,14 @@ import { ProfileSkeleton } from '../components/Skeleton';
 import { useToast } from '../components/Toast';
 import useSound from '../hooks/useSound';
 import { BookIcon, TargetIcon, CheckCircleIcon, StarIcon } from '../components/Icons';
+<<<<<<< HEAD
 import { testService } from '../services/testService';
 
 const Profile = ({ isDark, onThemeToggle, onLogout }) => {
+=======
+
+const Profile = ({ isDark, onThemeToggle, onLogout, assessments }) => {
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
     const navigate = useNavigate();
     const toast = useToast();
     const { playClick, playSuccess, isEnabled, setEnabled } = useSound();
@@ -18,6 +23,7 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
     // Loading state
     const [isLoading, setIsLoading] = useState(true);
 
+<<<<<<< HEAD
     // Assessments state - fetch from backend or use defaults
     const [assessments, setAssessments] = useState({
         upcoming: [],
@@ -26,6 +32,8 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
         missed: []
     });
 
+=======
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
     // Settings states
     const [soundEnabled, setSoundEnabled] = useState(isEnabled());
     const [glassmorphism, setGlassmorphism] = useState(() => {
@@ -33,6 +41,7 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
     });
 
     useEffect(() => {
+<<<<<<< HEAD
         fetchAssessmentData();
     }, []);
 
@@ -104,6 +113,12 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
         }
     };
 
+=======
+        const timer = setTimeout(() => setIsLoading(false), 500);
+        return () => clearTimeout(timer);
+    }, []);
+
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
     const handleLogout = () => {
         playClick();
         toast.info('Logging out...');

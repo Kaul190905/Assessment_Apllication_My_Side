@@ -1,5 +1,9 @@
 {
+<<<<<<< HEAD
   "name": "Student Dashboard Redesign",
+=======
+  "name": "online-test-app",
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -14,9 +18,14 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+<<<<<<< HEAD
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+=======
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -37,9 +46,12 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+<<<<<<< HEAD
   },
   "devDependencies": {
     "@vitejs/plugin-react-swc": "^4.2.2",
     "vite": "^7.3.1"
+=======
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
   }
 }

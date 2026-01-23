@@ -13,9 +13,14 @@ import { DashboardSkeleton } from '../components/Skeleton';
 import { useToast } from '../components/Toast';
 import useSound from '../hooks/useSound';
 import { BookIcon, TargetIcon, CheckCircleIcon, ChartIcon, StarIcon } from '../components/Icons';
+<<<<<<< HEAD
 import { testService } from '../services/testService';
 
 const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
+=======
+
+const Dashboard = ({ isDark, onThemeToggle, assessments, onStartTest, onLogout }) => {
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
     const navigate = useNavigate();
     const toast = useToast();
     const { playClick, playSuccess } = useSound();
@@ -23,6 +28,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
     // Loading state for skeleton
     const [isLoading, setIsLoading] = useState(true);
 
+<<<<<<< HEAD
     // Assessments state - now fetched from backend
     const [assessments, setAssessments] = useState({
         upcoming: [],
@@ -31,6 +37,8 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
         missed: []
     });
 
+=======
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
     // Mobile sidebar state
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -43,6 +51,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
     const [showFeedback, setShowFeedback] = useState(false);
     const [selectedTest, setSelectedTest] = useState(null);
 
+<<<<<<< HEAD
     // Fetch published tests from backend
     useEffect(() => {
         fetchPublishedTests();
@@ -157,6 +166,17 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
             return;
         }
 
+=======
+    // Simulate loading
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 800);
+        return () => clearTimeout(timer);
+    }, []);
+
+    const handleStartTest = (test) => {
+>>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
         playSuccess();
         toast.info(`Starting ${test.title}...`);
         onStartTest(test);
