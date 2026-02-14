@@ -13,10 +13,7 @@ import useSound from '../hooks/useSound';
 import { useToast } from '../components/Toast';
 import { questions } from '../data/questions';
 import { formatTime } from '../utils/formatTime';
-<<<<<<< HEAD
 import { testService } from '../services/testService';
-=======
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
 
 const EXPECTED_ROLL = "STU2025001";
 
@@ -25,26 +22,21 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
     const toast = useToast();
     const { playClick, playSelect, playSuccess, playWarning } = useSound();
 
-<<<<<<< HEAD
     // Use questions from currentTest if available, ensuring it's an array
     const testQuestions = (currentTest?.questionsData && Array.isArray(currentTest.questionsData) && currentTest.questionsData.length > 0)
         ? currentTest.questionsData 
         : questions;
 
-    const totalTime = currentTest?.duration ? parseInt(currentTest.duration) * 60 : 120 * 60;
+    // Determine total time: try numeric durationMinutes first, fallback to parsing string, default to 60 mins
+    const totalTime = (currentTest?.durationMinutes && !isNaN(currentTest.durationMinutes))
+        ? parseInt(currentTest.durationMinutes) * 60
+        : (currentTest?.duration ? parseInt(currentTest.duration) * 60 : 60 * 60);
 
     const [currentQuestion, setCurrentQuestion] = useState(0);
     const [answers, setAnswers] = useState(new Array(testQuestions.length).fill(null));
     const [marked, setMarked] = useState(new Array(testQuestions.length).fill(false));
     const [visited, setVisited] = useState(new Array(testQuestions.length).fill(false));
     const { timeLeft } = useTestTimer(totalTime);
-=======
-    const [currentQuestion, setCurrentQuestion] = useState(0);
-    const [answers, setAnswers] = useState(new Array(questions.length).fill(null));
-    const [marked, setMarked] = useState(new Array(questions.length).fill(false));
-    const [visited, setVisited] = useState(new Array(questions.length).fill(false));
-    const { timeLeft } = useTestTimer(120 * 60);
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
 
     // Timer warning states
     const warned5Min = useRef(false);
@@ -58,10 +50,7 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
     const [rollInput, setRollInput] = useState('');
     const [error, setError] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-<<<<<<< HEAD
     const [isSubmitting, setIsSubmitting] = useState(false);
-=======
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
 
     // Timer warnings
     useEffect(() => {
@@ -124,11 +113,7 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
 
     const handleNext = () => {
         playClick();
-<<<<<<< HEAD
         setCurrentQuestion(Math.min(testQuestions.length - 1, currentQuestion + 1));
-=======
-        setCurrentQuestion(Math.min(questions.length - 1, currentQuestion + 1));
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
     };
 
     const handleJump = (index) => {
@@ -149,7 +134,6 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
         setShowRollInput(true);
     };
 
-<<<<<<< HEAD
     // Step 3: Validate roll number and submit to backend
     const handleFinalSubmit = async () => {
         if (rollInput.trim() === EXPECTED_ROLL) {
@@ -163,14 +147,9 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
                 // Format answers for backend (Array of objects with option text)
                 const formattedAnswers = answers.map((ansIdx, qIdx) => {
                     const question = testQuestions[qIdx];
-                    // If skipped/null, we still map it but handle appropriately if needed
-                    // For now, map only answered ones or map all?
-                    // attemptController expects array matching logic.
-                    // But usually we just filter out nulls or send them marked as such.
-                    // Let's filter first then map
                     return ansIdx !== null ? {
                         questionId: question.id,
-                        selected: question.options[ansIdx] // Send the Option Text
+                        selected: question.options[ansIdx]
                     } : null;
                 }).filter(a => a !== null);
 
@@ -186,8 +165,24 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
                 };
 
                 // Submit to backend
-                const result = await testService.submitAttempt(attemptData);
+                let result = {};
+                try {
+                    result = await testService.submitAttempt(attemptData);
+                } catch (apiErr) {
+                    console.warn('API submission failed, using local fallback:', apiErr.message);
+                }
                 
+                // Save to local storage for persistence (especially useful in demo/unauthenticated mode)
+                const localAttempts = JSON.parse(localStorage.getItem('localAttempts') || '[]');
+                localAttempts.push({
+                    testId: currentTest?.id,
+                    studentId: studentId,
+                    score: result.score || 0,
+                    date: new Date().toISOString(),
+                    percentage: result.score ? (result.score / (currentTest?.marks || 1) * 100) : (answers.filter(a => a !== null).length * 2 / (currentTest?.marks || 1) * 100)
+                });
+                localStorage.setItem('localAttempts', JSON.stringify(localAttempts));
+
                 playSuccess();
                 setShowRollInput(false);
                 setShowSuccess(true);
@@ -209,11 +204,22 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
                 }, 3000);
 
             } catch (err) {
-                console.error('Failed to submit test:', err);
-                toast.error('Failed to submit test. Please try again.');
+                console.error('Failed to handle submission:', err);
+                toast.error('Submission encountered an error, but your progress was saved.');
                 setIsSubmitting(false);
                 
-                // Fallback: Still show success locally
+                // Local fallback even on major error
+                const localAttempts = JSON.parse(localStorage.getItem('localAttempts') || '[]');
+                if (!localAttempts.some(a => a.testId === currentTest?.id)) {
+                    localAttempts.push({
+                        testId: currentTest?.id,
+                        studentId: rollInput,
+                        date: new Date().toISOString(),
+                        percentage: (answers.filter(a => a !== null).length * 2 / (currentTest?.marks || 1) * 100)
+                    });
+                    localStorage.setItem('localAttempts', JSON.stringify(localAttempts));
+                }
+
                 playSuccess();
                 setShowRollInput(false);
                 setShowSuccess(true);
@@ -223,31 +229,6 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
                     navigate('/');
                 }, 3000);
             }
-=======
-    // Step 3: Validate roll number and submit
-    const handleFinalSubmit = () => {
-        if (rollInput.trim() === EXPECTED_ROLL) {
-            playSuccess();
-            setShowRollInput(false);
-            setShowSuccess(true);
-            setSubmitted(true);
-
-            // Calculate score (demo: random score based on answered questions)
-            const answeredCount = answers.filter(a => a !== null).length;
-            const totalMarks = currentTest?.marks || 40;
-            // Simulate score: get 2 marks per answered question (simplified)
-            const calculatedScore = Math.min(answeredCount * 2, totalMarks);
-
-            // Call onCompleteTest to move from live to completed
-            if (onCompleteTest) {
-                onCompleteTest(calculatedScore, totalMarks);
-            }
-
-            // Redirect to dashboard after 3 seconds
-            setTimeout(() => {
-                navigate('/');
-            }, 3000);
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
         } else {
             playWarning();
             setError(true);
@@ -281,21 +262,14 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
                 onThemeToggle={onThemeToggle}
                 showTimer={true}
                 timerPulse={timerPulse}
-<<<<<<< HEAD
                 title={currentTest?.title}
                 instructor={currentTest?.instructor}
                 duration={currentTest?.duration}
-=======
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
             />
 
             {/* Progress Bar with Submit Button */}
             <div className="progress-submit-row">
-<<<<<<< HEAD
                 <ProgressBar answers={answers} total={testQuestions.length} />
-=======
-                <ProgressBar answers={answers} total={questions.length} />
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
                 <SubmitButton
                     onClick={handleSubmitClick}
                     disabled={submitted}
@@ -305,17 +279,10 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
 
             <div className="main-content">
                 <section className="question-section">
-<<<<<<< HEAD
                     <QuestionCard question={testQuestions[currentQuestion]} totalQuestions={testQuestions.length} />
 
                     <div className="options">
                         {testQuestions[currentQuestion].options.map((opt, i) => (
-=======
-                    <QuestionCard question={questions[currentQuestion]} />
-
-                    <div className="options">
-                        {questions[currentQuestion].options.map((opt, i) => (
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
                             <OptionItem
                                 key={i}
                                 index={i}
@@ -328,11 +295,7 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
 
                     <NavigationButtons
                         current={currentQuestion}
-<<<<<<< HEAD
                         total={testQuestions.length}
-=======
-                        total={questions.length}
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
                         onPrev={handlePrev}
                         onNext={handleNext}
                         onClear={handleClear}
@@ -345,11 +308,7 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
                 <aside className="sidebar">
                     <h3>Question Palette</h3>
                     <QuestionPalette
-<<<<<<< HEAD
                         total={testQuestions.length}
-=======
-                        total={questions.length}
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
                         current={currentQuestion}
                         answers={answers}
                         marked={marked}
@@ -361,11 +320,7 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
                         answers={answers}
                         marked={marked}
                         visited={visited}
-<<<<<<< HEAD
                         total={testQuestions.length}
-=======
-                        total={questions.length}
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
                     />
                 </aside>
             </div>
@@ -389,11 +344,7 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
                                 <span className="stat-label">Marked for Review</span>
                             </div>
                             <div className="stat-item not-answered">
-<<<<<<< HEAD
                                 <span className="stat-value">{testQuestions.length - answeredCount}</span>
-=======
-                                <span className="stat-value">{questions.length - answeredCount}</span>
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
                                 <span className="stat-label">Not Answered</span>
                             </div>
                             <div className="stat-item not-visited">
@@ -405,11 +356,7 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
                         <div className="confirmation-palette">
                             <h3>Question Status</h3>
                             <div className="palette-grid-large">
-<<<<<<< HEAD
                                 {Array.from({ length: testQuestions.length }, (_, i) => {
-=======
-                                {Array.from({ length: questions.length }, (_, i) => {
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
                                     let status = '';
                                     if (!visited[i]) status = 'not-visited';
                                     else if (marked[i]) status = 'marked';
@@ -475,7 +422,9 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
                         )}
                         <div className="modal-buttons">
                             <button onClick={handleCancelRollInput}>Cancel</button>
-                            <button onClick={handleFinalSubmit}>Submit Test</button>
+                            <button onClick={handleFinalSubmit} disabled={isSubmitting}>
+                                {isSubmitting ? 'Submitting...' : 'Submit Test'}
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -487,11 +436,7 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
                     <div className="success-content">
                         <div className="success-icon"></div>
                         <h2>Test Submitted Successfully!</h2>
-<<<<<<< HEAD
                         <p>You answered <strong>{answeredCount}</strong> out of <strong>{testQuestions.length}</strong> questions.</p>
-=======
-                        <p>You answered <strong>{answeredCount}</strong> out of <strong>{questions.length}</strong> questions.</p>
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
                         <p className="redirect-text">Redirecting to Dashboard...</p>
                         <div className="loading-spinner"></div>
                     </div>

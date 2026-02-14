@@ -8,14 +8,9 @@ import { ProfileSkeleton } from '../components/Skeleton';
 import { useToast } from '../components/Toast';
 import useSound from '../hooks/useSound';
 import { BookIcon, TargetIcon, CheckCircleIcon, StarIcon } from '../components/Icons';
-<<<<<<< HEAD
 import { testService } from '../services/testService';
 
 const Profile = ({ isDark, onThemeToggle, onLogout }) => {
-=======
-
-const Profile = ({ isDark, onThemeToggle, onLogout, assessments }) => {
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
     const navigate = useNavigate();
     const toast = useToast();
     const { playClick, playSuccess, isEnabled, setEnabled } = useSound();
@@ -23,7 +18,6 @@ const Profile = ({ isDark, onThemeToggle, onLogout, assessments }) => {
     // Loading state
     const [isLoading, setIsLoading] = useState(true);
 
-<<<<<<< HEAD
     // Assessments state - fetch from backend or use defaults
     const [assessments, setAssessments] = useState({
         upcoming: [],
@@ -32,8 +26,6 @@ const Profile = ({ isDark, onThemeToggle, onLogout, assessments }) => {
         missed: []
     });
 
-=======
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
     // Settings states
     const [soundEnabled, setSoundEnabled] = useState(isEnabled());
     const [glassmorphism, setGlassmorphism] = useState(() => {
@@ -41,7 +33,6 @@ const Profile = ({ isDark, onThemeToggle, onLogout, assessments }) => {
     });
 
     useEffect(() => {
-<<<<<<< HEAD
         fetchAssessmentData();
     }, []);
 
@@ -50,13 +41,12 @@ const Profile = ({ isDark, onThemeToggle, onLogout, assessments }) => {
             setIsLoading(true);
             
             // Check if user has auth token
-            // Check if user has auth token
             const token = localStorage.getItem('authToken');
             if (!token) {
                 console.log('No auth token in Profile, but fetching public tests...');
             }
             
-            // Fetch published tests (upcoming)
+            // Fetch published tests (upcoming/live)
             const tests = await testService.getPublishedTests();
             const transformedTests = tests.map(test => ({
                 id: test.testId,
@@ -67,27 +57,67 @@ const Profile = ({ isDark, onThemeToggle, onLogout, assessments }) => {
 
             // Try to fetch completed attempts
             try {
-                const allAttempts = await testService.getMyAttempts();
+                let myAttempts = [];
+                try {
+                    const allAttempts = await testService.getMyAttempts();
+                    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                    const studentIdentifier = userData.email || 'STU2025001';
+                    
+                    myAttempts = allAttempts.filter(a => {
+                        const sId = (typeof a.studentId === 'object' && a.studentId !== null)
+                            ? (a.studentId.email || a.studentId.id || a.studentId._id)
+                            : a.studentId;
+                        return sId === studentIdentifier;
+                    });
+                } catch (apiErr) {
+                    console.warn('API attempts fetch failed in Profile:', apiErr.message);
+                }
+
+                // Merge with local attempts
+                const localAttempts = JSON.parse(localStorage.getItem('localAttempts') || '[]');
                 const userData = JSON.parse(localStorage.getItem('userData') || '{}');
                 const studentIdentifier = userData.email || 'STU2025001';
-                
-                const myAttempts = allAttempts.filter(a => a.studentId === studentIdentifier);
+
+                localAttempts.forEach(local => {
+                    const exists = myAttempts.some(a => {
+                        const tId = (typeof a.testId === 'object' && a.testId !== null)
+                            ? (a.testId.testId || a.testId._id || a.testId.id)
+                            : a.testId;
+                        return tId === local.testId;
+                    });
+                    if (!exists && local.studentId === studentIdentifier) {
+                        myAttempts.push(local);
+                    }
+                });
                 
                 // Create a set of completed test IDs
                 const completedTestIds = new Set(myAttempts.map(a => {
                     if (typeof a.testId === 'object' && a.testId !== null) {
-                        return a.testId.testId;
+                        return a.testId.testId || a.testId._id || a.testId.id;
                     }
                     return a.testId;
                 }));
 
                 const liveTests = transformedTests.filter(t => !completedTestIds.has(t.id));
-                const completedTests = transformedTests.filter(t => completedTestIds.has(t.id));
+                const completedTests = transformedTests.filter(t => completedTestIds.has(t.id)).map(test => {
+                    const attempt = myAttempts.find(a => {
+                        const tId = (typeof a.testId === 'object' && a.testId !== null)
+                            ? (a.testId.testId || a.testId._id || a.testId.id)
+                            : a.testId;
+                        return tId === test.id;
+                    });
+                    return {
+                        ...test,
+                        percentage: attempt ? attempt.percentage || (attempt.score ? (attempt.score / (test.marks || 1) * 100) : 0) : 0,
+                        score: attempt ? attempt.score : 0,
+                        attemptId: attempt ? attempt._id || attempt.id : null
+                    };
+                });
 
                 setAssessments({
                     upcoming: [],
                     live: liveTests,
-                    completed: myAttempts, // Profile usually displays the attempt objects for performance analysis
+                    completed: completedTests,
                     missed: []
                 });
             } catch (err) {
@@ -113,12 +143,6 @@ const Profile = ({ isDark, onThemeToggle, onLogout, assessments }) => {
         }
     };
 
-=======
-        const timer = setTimeout(() => setIsLoading(false), 500);
-        return () => clearTimeout(timer);
-    }, []);
-
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
     const handleLogout = () => {
         playClick();
         toast.info('Logging out...');
@@ -160,7 +184,7 @@ const Profile = ({ isDark, onThemeToggle, onLogout, assessments }) => {
 
     const totalTests = assessments.completed.length;
     const avgScore = totalTests > 0
-        ? Math.round(assessments.completed.reduce((acc, test) => acc + test.percentage, 0) / totalTests)
+        ? Math.round(assessments.completed.reduce((acc, test) => acc + (test.percentage || 0), 0) / totalTests)
         : 0;
 
     // Calculate strongest subject (field with highest average score)
@@ -169,11 +193,12 @@ const Profile = ({ isDark, onThemeToggle, onLogout, assessments }) => {
 
         const subjectScores = {};
         assessments.completed.forEach(test => {
-            if (!subjectScores[test.subject]) {
-                subjectScores[test.subject] = { total: 0, count: 0 };
+            const subject = test.testId?.topic || test.subject || 'Unknown';
+            if (!subjectScores[subject]) {
+                subjectScores[subject] = { total: 0, count: 0 };
             }
-            subjectScores[test.subject].total += test.percentage;
-            subjectScores[test.subject].count += 1;
+            subjectScores[subject].total += (test.percentage || 0);
+            subjectScores[subject].count += 1;
         });
 
         let strongest = { name: 'N/A', avgScore: 0 };

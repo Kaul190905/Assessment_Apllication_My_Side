@@ -5034,6 +5034,34 @@ button.btn-submit.btn-submit-small {
     color: var(--text);
 }
 
+/* Active Tab Styling */
+.enhanced-stat-card.tab-active {
+    border: 2px solid var(--primary);
+    box-shadow: 0 4px 20px rgba(155, 127, 209, 0.3);
+}
+
+.enhanced-stat-card.live.tab-active {
+    border: 2px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.5);
+}
+
+/* Empty State Styling */
+.empty-state {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 60px 24px;
+    text-align: center;
+    box-shadow: 0 2px 12px var(--card-shadow);
+    margin-top: 24px;
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+}
+
+
 @media (max-width: 1024px) {
     .enhanced-stats-grid {
         grid-template-columns: repeat(2, 1fr);

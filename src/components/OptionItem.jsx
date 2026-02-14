@@ -9,7 +9,7 @@ const OptionItem = ({ index, text, selected, onSelect }) => {
         checked={selected}
         onChange={() => onSelect(index)}
       />
-      <span>{String.fromCharCode(65 + index)}. {text}</span>
+      <span>{String.fromCharCode(65 + index)}. {(text || "").replace(/^\s*[A-Z][.)]\s*/, '')}</span>
     </label>
   );
 };

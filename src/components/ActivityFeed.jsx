@@ -26,6 +26,7 @@ const ActivityFeed = ({ activities }) => {
             case 'score_received':
                 return <StarIcon size={18} color="white" />;
             case 'test_scheduled':
+            case 'announcement':
                 return <CalendarIcon size={18} color="white" />;
             case 'achievement':
                 return <TrophyIcon size={18} color="white" />;
@@ -44,7 +45,8 @@ const ActivityFeed = ({ activities }) => {
             case 'score_received':
                 return 'var(--warning)';
             case 'test_scheduled':
-                return 'var(--text-secondary)';
+            case 'announcement':
+                return 'var(--primary)';
             case 'achievement':
                 return 'var(--primary)';
             default:

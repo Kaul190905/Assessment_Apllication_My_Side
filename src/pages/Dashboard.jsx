@@ -13,14 +13,9 @@ import { DashboardSkeleton } from '../components/Skeleton';
 import { useToast } from '../components/Toast';
 import useSound from '../hooks/useSound';
 import { BookIcon, TargetIcon, CheckCircleIcon, ChartIcon, StarIcon } from '../components/Icons';
-<<<<<<< HEAD
 import { testService } from '../services/testService';
 
 const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
-=======
-
-const Dashboard = ({ isDark, onThemeToggle, assessments, onStartTest, onLogout }) => {
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
     const navigate = useNavigate();
     const toast = useToast();
     const { playClick, playSuccess } = useSound();
@@ -28,7 +23,6 @@ const Dashboard = ({ isDark, onThemeToggle, assessments, onStartTest, onLogout }
     // Loading state for skeleton
     const [isLoading, setIsLoading] = useState(true);
 
-<<<<<<< HEAD
     // Assessments state - now fetched from backend
     const [assessments, setAssessments] = useState({
         upcoming: [],
@@ -37,10 +31,11 @@ const Dashboard = ({ isDark, onThemeToggle, assessments, onStartTest, onLogout }
         missed: []
     });
 
-=======
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
     // Mobile sidebar state
     const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    // Tab state for filtering sessions
+    const [activeTab, setActiveTab] = useState('live');
 
     // State for expanded subject groups
     const [expandedUpcoming, setExpandedUpcoming] = useState(null);
@@ -51,7 +46,6 @@ const Dashboard = ({ isDark, onThemeToggle, assessments, onStartTest, onLogout }
     const [showFeedback, setShowFeedback] = useState(false);
     const [selectedTest, setSelectedTest] = useState(null);
 
-<<<<<<< HEAD
     // Fetch published tests from backend
     useEffect(() => {
         fetchPublishedTests();
@@ -62,7 +56,6 @@ const Dashboard = ({ isDark, onThemeToggle, assessments, onStartTest, onLogout }
             setIsLoading(true);
             
             // Check if user has auth token
-            // Check if user has auth token
             const token = localStorage.getItem('authToken');
             if (!token) {
                 console.log('No auth token found, but fetching public tests...');
@@ -70,68 +63,162 @@ const Dashboard = ({ isDark, onThemeToggle, assessments, onStartTest, onLogout }
 
             const tests = await testService.getPublishedTests();
             console.log('Fetched tests from backend:', tests);
-            if (tests.length > 0) {
-                console.log('Sample test keys:', Object.keys(tests[0]));
-                console.log('Sample test questions:', tests[0].questions);
-            }
             
             // Transform backend tests to match your UI format
-            const transformedTests = tests.map(test => ({
-                id: test.testId,
-                title: test.topic,
-                subject: test.topic,
-                instructor: 'Staff', // You can enhance this with actual staff data
-                date: new Date(test.createdAt).toLocaleDateString(),
-                duration: `${test.count * 2} mins`, // Estimate: 2 mins per question
-                questions: test.count,
-                marks: test.count * 2, // Estimate: 2 marks per question
-                questionsData: test.questions, // Store actual questions
-                difficulty: test.difficulty,
-                startTime: '09:00 AM', // You can enhance this
-                endTime: '11:59 PM', // You can enhance this
-            }));
+            // Logic implemented per user request: UTC -> Local Time conversion & Strict Categorization
+            
+            const now = new Date();
+            console.log("Current Dashboard Time:", now.toString());
+
+            const processedTests = tests.map(test => {
+                // 1. Detect Scheduled Date (UTC from backend)
+                // STRICTLY prioritize 'startDate' as per 'gradeflow' schema, but allow fallback to 'scheduledDate' for limited backward compat if needed.
+                const rawSchedule = test.startDate || test.scheduledDate; 
+                
+                let effectiveDate = null;
+                let isScheduled = false;
+
+                // 2. Strict Parsing & Validation
+                if (rawSchedule) {
+                    const d = new Date(rawSchedule); // Converts UTC to Student's Local Time
+                    // Validate: Must be a valid Date AND not the epoch start (1970-01-01) which might indicate default/empty value
+                    if (d instanceof Date && !isNaN(d) && d.getFullYear() > 1970) {
+                        effectiveDate = d;
+                        isScheduled = true;
+                    }
+                }
+
+                // 3. Fallback (if no schedule, use creation time)
+                if (!effectiveDate) {
+                    effectiveDate = new Date(test.createdAt);
+                    isScheduled = false;
+                }
+                
+                // 4. Categorization Logic
+                // "Upcoming" means strictly in the future
+                const isUpcoming = effectiveDate.getTime() > now.getTime();
+                
+                return {
+                    id: test.testId,
+                    title: test.topic,
+                    subject: test.topic,
+                    instructor: 'Staff',
+                    
+                    // 5. Formatted Display
+                    date: effectiveDate.toLocaleDateString(),
+                    
+                    // Formatted Time (e.g., "02:30 PM")
+                    startTime: effectiveDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
+                    
+                    // Duration: Pass raw minutes for logic (Timer) and formatted string for UI
+                    // Fallback to 60 minutes (schema default) if not provided, avoiding count-based heuristic
+                    durationMinutes: test.duration || 60, 
+                    duration: test.duration ? `${test.duration} mins` : '60 mins',
+                    
+                    questions: test.count,
+                    marks: test.count * 2,
+                    questionsData: test.questions,
+                    difficulty: test.difficulty,
+                    endTime: '11:59 PM',
+                    
+                    // 6. Data for Sorting & Status
+                    rawDate: effectiveDate,
+                    isScheduled: isScheduled, // This flag can be used to distinguish "Scheduled" vs "Posted" items if needed
+                    status: isUpcoming ? 'upcoming' : 'live'
+                };
+            });
 
             // Fetch student attempts to categorize tests
             let myAttempts = [];
+            
+            // 1. Try fetching from backend
             try {
-                if (token) {
-                    const allAttempts = await testService.getMyAttempts();
-                    // Get current student identifier (matches logic in TestPage)
-                    const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-                    const studentIdentifier = userData.email || 'STU2025001';
-                    
-                    // Filter attempts for this student
-                    myAttempts = allAttempts.filter(a => 
-                        a.studentId === studentIdentifier || 
-                        (typeof a.testId === 'object' && a.testId?.testId === studentIdentifier)
-                    );
-                }
+                const allAttempts = await testService.getMyAttempts();
+                // Get current student identifier (matches logic in TestPage)
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                const studentIdentifier = userData.email || 'STU2025001';
+                
+                // Filter attempts for this student
+                myAttempts = allAttempts.filter(a => {
+                    const sId = (typeof a.studentId === 'object' && a.studentId !== null)
+                        ? (a.studentId.email || a.studentId.id || a.studentId._id)
+                        : a.studentId;
+                    return sId === studentIdentifier;
+                });
             } catch (err) {
-                console.warn('Could not fetch attempts:', err.message);
+                console.warn('Could not fetch attempts from backend:', err.message);
             }
+
+            // 2. Merge with local attempts (fallback for demo mode)
+            const localAttempts = JSON.parse(localStorage.getItem('localAttempts') || '[]');
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            const studentIdentifier = userData.email || 'STU2025001';
+
+            localAttempts.forEach(local => {
+                // If this test isn't already in myAttempts, add it
+                const exists = myAttempts.some(a => {
+                    const tId = (typeof a.testId === 'object' && a.testId !== null)
+                        ? (a.testId.testId || a.testId._id || a.testId.id)
+                        : a.testId;
+                    return tId === local.testId;
+                });
+                
+                if (!exists && local.studentId === studentIdentifier) {
+                    myAttempts.push(local);
+                }
+            });
 
             // Create a set of completed test IDs for fast lookup
             const completedTestIds = new Set(myAttempts.map(a => {
                 // Handle different potential structures of the populated testId
                 if (typeof a.testId === 'object' && a.testId !== null) {
-                    return a.testId.testId;
+                    return a.testId.testId || a.testId._id || a.testId.id;
                 }
                 return a.testId;
             }));
 
-            const liveTests = transformedTests.filter(t => !completedTestIds.has(t.id));
-            const completedTests = transformedTests.filter(t => completedTestIds.has(t.id));
+            // Filter out completed tests from the processed list
+            const incompleteTests = processedTests.filter(t => !completedTestIds.has(t.id));
+
+            // Split into Upcoming and Live based on the STRICT Logic requested:
+            // "Upcoming" means effectiveDate > now
+            // "Live" means effectiveDate <= now
+            
+            const upcomingTests = incompleteTests
+                .filter(t => t.rawDate.getTime() > now.getTime())
+                .sort((a, b) => a.rawDate - b.rawDate); // Sort Ascending (Soonest first)
+                
+            const liveTests = incompleteTests
+                .filter(t => t.rawDate.getTime() <= now.getTime())
+                .sort((a, b) => b.rawDate - a.rawDate); // Sort Descending (Newest first)
+
+            const completedTests = processedTests.filter(t => completedTestIds.has(t.id)).map(test => {
+                const attempt = myAttempts.find(a => {
+                    const tId = (typeof a.testId === 'object' && a.testId !== null)
+                        ? (a.testId.testId || a.testId._id || a.testId.id)
+                        : a.testId;
+                    return tId === test.id;
+                });
+                return {
+                    ...test,
+                    percentage: attempt ? attempt.percentage || (attempt.score ? (attempt.score / test.marks * 100) : 0) : 0,
+                    score: attempt ? attempt.score : 0,
+                    attemptId: attempt ? attempt._id || attempt.id : null
+                };
+            });
+
+
 
             // Categorize tests
             setAssessments({
-                upcoming: [],
+                upcoming: upcomingTests,
                 live: liveTests,
                 completed: completedTests,
                 missed: []
             });
 
-            if (transformedTests.length > 0) {
-                toast.success(`Loaded ${transformedTests.length} published test(s)`);
+            if (processedTests.length > 0) {
+                toast.success(`Loaded ${processedTests.length} published test(s)`);
             } else {
                 toast.info('No published tests available at the moment');
             }
@@ -161,22 +248,20 @@ const Dashboard = ({ isDark, onThemeToggle, assessments, onStartTest, onLogout }
     const handleStartTest = (test) => {
         // Prevent re-taking completed tests
         if (assessments.completed.some(t => t.id === test.id)) {
-            playWarning();
             toast.error('You have already completed this test.');
             return;
         }
 
-=======
-    // Simulate loading
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 800);
-        return () => clearTimeout(timer);
-    }, []);
+        // Check if test has expired (additional frontend validation)
+        if (test.endDate) {
+            const now = new Date();
+            const expirationDate = new Date(test.endDate);
+            if (expirationDate <= now) {
+                toast.error('This test has expired and is no longer accessible.');
+                return;
+            }
+        }
 
-    const handleStartTest = (test) => {
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
         playSuccess();
         toast.info(`Starting ${test.title}...`);
         onStartTest(test);
@@ -319,13 +404,38 @@ const Dashboard = ({ isDark, onThemeToggle, assessments, onStartTest, onLogout }
 
     const strongestSubject = getStrongestSubject();
 
-    // Generate activities from completed tests
-    const activities = assessments.completed.slice(0, 4).map((test, index) => ({
-        type: 'test_completed',
-        title: `Completed ${test.title}`,
-        description: `Submitted on ${test.date}`,
-        timestamp: new Date(Date.now() - (index + 1) * 24 * 60 * 60 * 1000).toISOString()
-    }));
+    // Generate specialized activities
+    const activities = [];
+
+    // 1. Last Test Attended Details
+    if (assessments.completed.length > 0) {
+        // Sort by rawDate to likely find the most relevant one, or ideally by attempt date if available
+        // Using rawDate (test schedule) as a proxy for now
+        const lastAttended = [...assessments.completed].sort((a, b) => b.rawDate - a.rawDate)[0];
+        const gradeInfo = getRecommendations(lastAttended);
+        
+        activities.push({
+            type: 'test_completed',
+            title: `Last Attended: ${lastAttended.title}`,
+            description: `Score: ${Math.round(lastAttended.percentage)}% • Grade: ${gradeInfo.grade}`,
+            timestamp: lastAttended.date,
+            id: 'last-attended'
+        });
+    }
+
+    // 2. Recent Test Posted by Staff
+    const allActive = [...assessments.live, ...assessments.upcoming];
+    if (allActive.length > 0) {
+        const recentPosted = allActive.sort((a, b) => b.rawDate - a.rawDate)[0];
+        
+        activities.push({
+            type: 'announcement',
+            title: `Recent Test Posted: ${recentPosted.title}`,
+            description: `Scheduled for ${recentPosted.date} at ${recentPosted.startTime}`,
+            timestamp: 'New',
+            id: 'recent-posted'
+        });
+    }
 
     if (isLoading) {
         return (
@@ -362,9 +472,12 @@ const Dashboard = ({ isDark, onThemeToggle, assessments, onStartTest, onLogout }
                 </div>
             </header>
 
-            {/* Enhanced Stats Grid */}
+            {/* Enhanced Stats Grid - Now works as Tab Navigation */}
             <div className="enhanced-stats-grid">
-                <div className="enhanced-stat-card clickable" onClick={() => scrollToSection('calendar-section')}>
+                <div 
+                    className={`enhanced-stat-card clickable ${activeTab === 'upcoming' ? 'tab-active' : ''}`} 
+                    onClick={() => { playClick(); setActiveTab('upcoming'); }}
+                >
                     <div className="stat-icon-wrapper primary"><BookIcon size={24} /></div>
                     <div className="stat-info">
                         <AnimatedCounter
@@ -374,7 +487,10 @@ const Dashboard = ({ isDark, onThemeToggle, assessments, onStartTest, onLogout }
                         <span className="stat-label">Upcoming Tests</span>
                     </div>
                 </div>
-                <div className="enhanced-stat-card live clickable" onClick={() => scrollToSection('live-section')}>
+                <div 
+                    className={`enhanced-stat-card live clickable ${activeTab === 'live' ? 'tab-active' : ''}`} 
+                    onClick={() => { playClick(); setActiveTab('live'); }}
+                >
                     <div className="stat-icon-wrapper danger"><TargetIcon size={24} /></div>
                     <div className="stat-info">
                         <AnimatedCounter
@@ -384,7 +500,10 @@ const Dashboard = ({ isDark, onThemeToggle, assessments, onStartTest, onLogout }
                         <span className="stat-label">Live Now</span>
                     </div>
                 </div>
-                <div className="enhanced-stat-card clickable" onClick={() => scrollToSection('completed-section')}>
+                <div 
+                    className={`enhanced-stat-card clickable ${activeTab === 'completed' ? 'tab-active' : ''}`} 
+                    onClick={() => { playClick(); setActiveTab('completed'); }}
+                >
                     <div className="stat-icon-wrapper warning"><CheckCircleIcon size={24} /></div>
                     <div className="stat-info">
                         <AnimatedCounter
@@ -403,145 +522,224 @@ const Dashboard = ({ isDark, onThemeToggle, assessments, onStartTest, onLogout }
                 </div>
             </div>
 
+
+            {/* Main Content Area - Shows content based on active tab */}
             {/* Live Assessments */}
-            {assessments.live.length > 0 && (
-                <section id="live-section" className="assessment-section">
-                    <h2 className="section-title">
-                        <span className="live-dot"></span>
-                        Live Assessments
-                    </h2>
-                    <div className="assessment-grid">
-                        {assessments.live.map((test) => (
-                            <div key={test.id} className="assessment-card live-card">
-                                <div className="card-header">
-                                    <span className="subject-tag">{test.subject}</span>
-                                    <span className="live-badge">LIVE</span>
-                                </div>
-                                <h3>{test.title}</h3>
-                                <p className="instructor">By {test.instructor}</p>
-                                <p className="test-timing">Available: {test.startTime} - {test.endTime}</p>
-                                <p className="test-duration">Duration: {test.duration}</p>
-                                <button
-                                    className="btn-start"
-                                    onClick={() => handleStartTest(test)}
-                                >
-                                    Start Test →
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            )}
-
-            {/* Dashboard Widgets Grid */}
-            <div className="dashboard-widgets">
-                <div className="widget-column">
-                    {/* Completed Assessments - Topic Boxes */}
-                    <section id="completed-section" className="assessment-section">
-                        <h2 className="section-title">Completed Assessments</h2>
-                        <div className="topic-boxes-grid">
-                            {Object.entries(groupedCompleted).map(([subject, tests]) => (
-                                <div
-                                    key={subject}
-                                    className={`topic-box completed ${expandedCompleted === subject ? 'active' : ''}`}
-                                    onClick={() => toggleCompleted(subject)}
-                                >
-                                    <span className="topic-name">{subject}</span>
-                                    <span className="topic-count">{tests.length}</span>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Expanded Content */}
-                        {expandedCompleted && groupedCompleted[expandedCompleted] && (
-                            <div className="expanded-content">
-                                <div className="expanded-header">
-                                    <h3>{expandedCompleted}</h3>
-                                    <button className="btn-close" onClick={() => setExpandedCompleted(null)}>✕</button>
-                                </div>
-                                <div className="completed-list">
-                                    {groupedCompleted[expandedCompleted].map((test) => (
-                                        <div key={test.id} className="completed-card">
-                                            <div className="completed-info">
-                                                <div className="completed-header">
-                                                    <h4>{test.title}</h4>
-                                                    <span className="status-badge completed">Completed</span>
-                                                </div>
-                                                <p className="completed-meta">
-                                                    {test.instructor} • {test.date}
-                                                </p>
+            {activeTab === 'live' && (
+                <>
+                    <section id="live-section" className="assessment-section">
+                        {assessments.live.length > 0 ? (
+                            <>
+                                <h2 className="section-title">
+                                    <span className="live-dot"></span>
+                                    Live Assessments
+                                </h2>
+                                <div className="assessment-grid">
+                                    {assessments.live.map((test) => (
+                                        <div key={test.id} className="assessment-card live-card">
+                                            <div className="card-header">
+                                                <span className="subject-tag">{test.subject}</span>
+                                                <span className="live-badge">LIVE</span>
                                             </div>
-                                            <div className="completed-actions">
-                                                <button
-                                                    className="btn-view-summary"
-                                                    onClick={(e) => handleViewFeedback(test, e)}
-                                                >
-                                                    View Summary
-                                                </button>
-                                            </div>
+                                            <h3>{test.title}</h3>
+                                            <p className="instructor">By {test.instructor}</p>
+                                            <p className="test-timing">
+                                                {test.isScheduled ? 'Scheduled:' : 'Posted:'} {test.date} at {test.startTime}
+                                            </p>
+                                            <p className="test-duration">Duration: {test.duration}</p>
+                                            <button
+                                                className="btn-start"
+                                                onClick={() => handleStartTest(test)}
+                                            >
+                                                Start Test →
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
+                            </>
+                        ) : (
+                            <div className="empty-state">
+                                <p>No live assessments at the moment.</p>
                             </div>
                         )}
                     </section>
 
-                    {/* Missed Assessments - Topic Boxes */}
-                    {assessments.missed && assessments.missed.length > 0 && (
-                        <section className="assessment-section">
-                            <h2 className="section-title missed-title">Missed Assessments</h2>
-                            <div className="topic-boxes-grid">
-                                {Object.entries(groupedMissed).map(([subject, tests]) => (
-                                    <div
-                                        key={subject}
-                                        className={`topic-box missed ${expandedMissed === subject ? 'active' : ''}`}
-                                        onClick={() => toggleMissed(subject)}
-                                    >
-                                        <span className="topic-name">{subject}</span>
-                                        <span className="topic-count">{tests.length}</span>
+                    <div className="dashboard-widgets">
+                        <div className="widget-column">
+                            {/* Performance Graph in Live Section */}
+                            <div id="performance-section">
+                                <PerformanceGraph data={assessments.completed} />
+                            </div>
+                        </div>
+
+                        {/* Right Column - Calendar and Activity in Live Section */}
+                        <div id="calendar-section" className="widget-column">
+                            <CalendarView events={[...assessments.live, ...assessments.upcoming]} />
+                            <ActivityFeed activities={activities} />
+                        </div>
+                    </div>
+                </>
+            )}
+
+            {/* Upcoming Assessments */}
+            {activeTab === 'upcoming' && (
+                <section id="upcoming-section" className="assessment-section">
+                    {assessments.upcoming.length > 0 ? (
+                        <>
+                            <h2 className="section-title">
+                                <span className="upcoming-dot" style={{ backgroundColor: '#FFC107' }}></span>
+                                Upcoming Scheduled Assessments
+                            </h2>
+                            <div className="assessment-grid">
+                                {assessments.upcoming.map((test) => (
+                                    <div key={test.id} className="assessment-card upcoming-card">
+                                        <div className="card-header">
+                                            <span className="subject-tag">{test.subject}</span>
+                                            <span className="upcoming-badge" style={{ backgroundColor: '#FFC107', color: '#000' }}>UPCOMING</span>
+                                        </div>
+                                        <h3>{test.title}</h3>
+                                        <p className="instructor">By {test.instructor}</p>
+                                        <p className="test-timing">Scheduled: {test.date} at {test.startTime}</p>
+                                        <p className="test-duration">Duration: {test.duration}</p>
+                                        <button
+                                            className="btn-start disabled"
+                                            disabled
+                                            style={{ opacity: 0.7, cursor: 'not-allowed', backgroundColor: '#6c757d', border: 'none' }}
+                                        >
+                                            Starts {test.startTime}
+                                        </button>
                                     </div>
                                 ))}
                             </div>
+                        </>
+                    ) : (
+                        <div className="empty-state">
+                            <p>No upcoming assessments scheduled.</p>
+                        </div>
+                    )}
+                </section>
+            )}
 
-                            {/* Expanded Content */}
-                            {expandedMissed && groupedMissed[expandedMissed] && (
-                                <div className="expanded-content missed-content">
-                                    <div className="expanded-header">
-                                        <h3>{expandedMissed}</h3>
-                                        <button className="btn-close" onClick={() => setExpandedMissed(null)}>✕</button>
-                                    </div>
-                                    <div className="assessment-grid">
-                                        {groupedMissed[expandedMissed].map((test) => (
-                                            <div key={test.id} className="assessment-card missed-card">
-                                                <div className="card-header">
-                                                    <span className="subject-tag">{test.subject}</span>
-                                                    <span className="status-badge missed">Missed</span>
-                                                </div>
-                                                <h3>{test.title}</h3>
-                                                <p className="instructor">By {test.instructor}</p>
-                                                <p className="scheduled-date">Was scheduled: {test.date}</p>
-                                                <p className="test-timing missed-timing">Was available: {test.startTime} - {test.endTime}</p>
-                                                <p className="test-duration">Duration: {test.duration}</p>
+            {/* Completed Assessments and Dashboard Widgets */}
+            {activeTab === 'completed' && (
+                <div className="dashboard-widgets">
+                    <div className="widget-column">
+                        {/* Completed Assessments - Topic Boxes */}
+                        <section id="completed-section" className="assessment-section">
+                            <h2 className="section-title">Completed Assessments</h2>
+                            {Object.keys(groupedCompleted).length > 0 ? (
+                                <>
+                                    <div className="topic-boxes-grid">
+                                        {Object.entries(groupedCompleted).map(([subject, tests]) => (
+                                            <div
+                                                key={subject}
+                                                className={`topic-box completed ${expandedCompleted === subject ? 'active' : ''}`}
+                                                onClick={() => toggleCompleted(subject)}
+                                            >
+                                                <span className="topic-name">{subject}</span>
+                                                <span className="topic-count">{tests.length}</span>
                                             </div>
                                         ))}
                                     </div>
+
+                                    {/* Expanded Content */}
+                                    {expandedCompleted && groupedCompleted[expandedCompleted] && (
+                                        <div className="expanded-content">
+                                            <div className="expanded-header">
+                                                <h3>{expandedCompleted}</h3>
+                                                <button className="btn-close" onClick={() => setExpandedCompleted(null)}>✕</button>
+                                            </div>
+                                            <div className="completed-list">
+                                                {groupedCompleted[expandedCompleted].map((test) => (
+                                                    <div key={test.id} className="completed-card">
+                                                        <div className="completed-info">
+                                                            <div className="completed-header">
+                                                                <h4>{test.title}</h4>
+                                                                <span className="status-badge completed">Completed</span>
+                                                            </div>
+                                                            <p className="completed-meta">
+                                                                {test.instructor} • {test.date}
+                                                            </p>
+                                                        </div>
+                                                        <div className="completed-actions">
+                                                            <button
+                                                                className="btn-view-summary"
+                                                                onClick={(e) => handleViewFeedback(test, e)}
+                                                            >
+                                                                View Summary
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="empty-state">
+                                    <p>No completed assessments yet.</p>
                                 </div>
                             )}
                         </section>
-                    )}
 
-                    {/* Performance Graph - After Missed Assessments */}
-                    <div id="performance-section">
-                        <PerformanceGraph data={assessments.completed} />
+                        {/* Missed Assessments - Topic Boxes */}
+                        {assessments.missed && assessments.missed.length > 0 && (
+                            <section className="assessment-section">
+                                <h2 className="section-title missed-title">Missed Assessments</h2>
+                                <div className="topic-boxes-grid">
+                                    {Object.entries(groupedMissed).map(([subject, tests]) => (
+                                        <div
+                                            key={subject}
+                                            className={`topic-box missed ${expandedMissed === subject ? 'active' : ''}`}
+                                            onClick={() => toggleMissed(subject)}
+                                        >
+                                            <span className="topic-name">{subject}</span>
+                                            <span className="topic-count">{tests.length}</span>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Expanded Content */}
+                                {expandedMissed && groupedMissed[expandedMissed] && (
+                                    <div className="expanded-content missed-content">
+                                        <div className="expanded-header">
+                                            <h3>{expandedMissed}</h3>
+                                            <button className="btn-close" onClick={() => setExpandedMissed(null)}>✕</button>
+                                        </div>
+                                        <div className="assessment-grid">
+                                            {groupedMissed[expandedMissed].map((test) => (
+                                                <div key={test.id} className="assessment-card missed-card">
+                                                    <div className="card-header">
+                                                        <span className="subject-tag">{test.subject}</span>
+                                                        <span className="status-badge missed">Missed</span>
+                                                    </div>
+                                                    <h3>{test.title}</h3>
+                                                    <p className="instructor">By {test.instructor}</p>
+                                                    <p className="scheduled-date">Was scheduled: {test.date}</p>
+                                                    <p className="test-timing missed-timing">Was available: {test.startTime} - {test.endTime}</p>
+                                                    <p className="test-duration">Duration: {test.duration}</p>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </section>
+                        )}
+
+                        {/* Performance Graph - After Missed Assessments */}
+                        <div id="performance-section">
+                            <PerformanceGraph data={assessments.completed} />
+                        </div>
+                    </div>
+
+                    {/* Right Column - Calendar and Activity */}
+                    <div id="calendar-section" className="widget-column">
+                        <CalendarView events={[...assessments.live, ...assessments.upcoming]} />
+                        <ActivityFeed activities={activities} />
                     </div>
                 </div>
+            )}
 
-                {/* Right Column - Calendar and Activity */}
-                <div id="calendar-section" className="widget-column">
-                    <CalendarView events={assessments.upcoming} />
-                    <ActivityFeed activities={activities} />
-                </div>
-            </div>
 
             {/* Floating Action Button */}
             <FloatingActionButton />

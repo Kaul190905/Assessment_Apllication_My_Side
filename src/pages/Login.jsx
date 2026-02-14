@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../components/ThemeToggle';
-<<<<<<< HEAD
 import { authService } from '../services/testService';
-=======
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
+import { GoogleLogin } from '@react-oauth/google';
+import { jwtDecode } from 'jwt-decode';
 
 const Login = ({ isDark, onThemeToggle, onLogin }) => {
     const navigate = useNavigate();
@@ -16,11 +15,7 @@ const Login = ({ isDark, onThemeToggle, onLogin }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
-<<<<<<< HEAD
     // Demo credentials (kept for fallback)
-=======
-    // Demo credentials
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
     const DEMO_CREDENTIALS = { id: 'STU2025001', password: 'student123' };
 
     const handleInputChange = (e) => {
@@ -33,16 +28,11 @@ const Login = ({ isDark, onThemeToggle, onLogin }) => {
         setShowPassword(prev => !prev);
     };
 
-<<<<<<< HEAD
     const handleSubmit = async (e) => {
-=======
-    const handleSubmit = (e) => {
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
         e.preventDefault();
         setIsLoading(true);
         setError('');
 
-<<<<<<< HEAD
         try {
             // Try real API authentication first
             const response = await authService.login(formData.id, formData.password);
@@ -71,18 +61,34 @@ const Login = ({ isDark, onThemeToggle, onLogin }) => {
         } finally {
             setIsLoading(false);
         }
-=======
-        // Simulate login delay
-        setTimeout(() => {
-            if (formData.id === DEMO_CREDENTIALS.id && formData.password === DEMO_CREDENTIALS.password) {
-                onLogin('student');
-                navigate('/');
-            } else {
-                setError('Invalid credentials. Please try again.');
-            }
-            setIsLoading(false);
-        }, 800);
->>>>>>> 95a58d0ee9809f0861c234b2ff2a0998125a811a
+    };
+
+    const handleGoogleSuccess = (credentialResponse) => {
+        try {
+            const decoded = jwtDecode(credentialResponse.credential);
+            
+            // Map Google user data to app user structure
+            const user = {
+                email: decoded.email,
+                name: decoded.name,
+                picture: decoded.picture,
+                role: 'student',
+                id: decoded.email // Use email as ID for Google users
+            };
+
+            localStorage.setItem('authToken', credentialResponse.credential);
+            localStorage.setItem('userData', JSON.stringify(user));
+            
+            onLogin('student');
+            navigate('/');
+        } catch (error) {
+            console.error('Google Auth Error:', error);
+            setError('Failed to process Google Login.');
+        }
+    };
+
+    const handleGoogleError = () => {
+        setError('Google Login Failed. Please try again.');
     };
 
     // Eye icons for password visibility toggle
@@ -194,6 +200,21 @@ const Login = ({ isDark, onThemeToggle, onLogin }) => {
                         )}
                     </button>
                 </form>
+
+                <div className="google-login-container" style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', alignItems: 'center', width: '100%' }}>
+                    <div className="divider" style={{ display: 'flex', alignItems: 'center', width: '100%', marginBottom: '1rem' }}>
+                        <span style={{ flex: 1, height: '1px', background: 'var(--border)' }}></span>
+                        <span style={{ padding: '0 10px', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>OR</span>
+                        <span style={{ flex: 1, height: '1px', background: 'var(--border)' }}></span>
+                    </div>
+                    <GoogleLogin
+                        onSuccess={handleGoogleSuccess}
+                        onError={handleGoogleError}
+                        theme={isDark ? "filled_black" : "outline"}
+                        shape="pill"
+                        width="300" // Adjust as needed
+                    />
+                </div>
 
                 {/* Demo Credentials */}
                 <div className="demo-credentials">

@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
+import '../styles/calendar-tooltip.css';
 
 const CalendarView = ({ events = [], onEventClick }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
     const [selectedDate, setSelectedDate] = useState(null);
     const [selectedEvents, setSelectedEvents] = useState([]);
+    const [hoveredDate, setHoveredDate] = useState(null);
 
     const months = [
         'January', 'February', 'March', 'April', 'May', 'June',
@@ -31,7 +33,14 @@ const CalendarView = ({ events = [], onEventClick }) => {
     const getEventsForDay = (day) => {
         const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         return events.filter(event => {
-            // Try to match various date formats
+            // Use rawDate object if available (most reliable)
+            if (event.rawDate instanceof Date) {
+                return event.rawDate.getDate() === day &&
+                    event.rawDate.getMonth() === month &&
+                    event.rawDate.getFullYear() === year;
+            }
+            
+            // Fallback to string parsing
             const eventDate = event.date;
             if (!eventDate) return false;
 
@@ -65,6 +74,14 @@ const CalendarView = ({ events = [], onEventClick }) => {
         }
     };
 
+    const handleMouseEnter = (day) => {
+        setHoveredDate(new Date(year, month, day));
+    };
+
+    const handleMouseLeave = () => {
+        setHoveredDate(null);
+    };
+
     const closePopup = () => {
         setSelectedDate(null);
         setSelectedEvents([]);
@@ -87,17 +104,39 @@ const CalendarView = ({ events = [], onEventClick }) => {
     for (let day = 1; day <= daysInMonth; day++) {
         const dayEvents = getEventsForDay(day);
         const hasEvents = dayEvents.length > 0;
-        const eventCount = dayEvents.length;
+        const isHovered = hoveredDate && hoveredDate.getDate() === day && hoveredDate.getMonth() === month && hoveredDate.getFullYear() === year;
 
+        // Determine if any event is "scheduled" (status 'upcoming') to decide symbol color/type if needed
+        // But distinct 'Star' icon is requested for 'important symbol'. 
+        // We will assume all tests in calendar are important.
+        
         calendarDays.push(
             <div
                 key={day}
                 className={`calendar-day ${isToday(day) ? 'today' : ''} ${hasEvents ? 'has-events' : ''}`}
                 onClick={() => handleDayClick(day, dayEvents)}
+                onMouseEnter={() => handleMouseEnter(day)}
+                onMouseLeave={handleMouseLeave}
             >
                 <span className="day-number">{day}</span>
                 {hasEvents && (
-                    <span className="event-count-badge">{eventCount}</span>
+                    <>
+                        {/* Important Symbol (Star) */}
+                        <div className="event-important-symbol">
+                            <span style={{ fontSize: '10px' }}>★</span>
+                        </div>
+                        
+                        {/* Tooltip on Hover */}
+                        {isHovered && (
+                            <div className="calendar-tooltip">
+                                {dayEvents.map((event, idx) => (
+                                    <div key={idx} className="tooltip-item">
+                                        {event.title}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </>
                 )}
             </div>
         );
@@ -134,7 +173,12 @@ const CalendarView = ({ events = [], onEventClick }) => {
                                 <div key={index} className="popup-assessment-card">
                                     <div className="popup-card-header">
                                         <span className="subject-tag">{event.subject}</span>
-                                        <span className="status-badge upcoming">Upcoming</span>
+                                        <span 
+                                            className={`status-badge ${event.status || 'upcoming'}`}
+                                            style={event.status === 'live' ? { backgroundColor: '#dc3545', color: 'white' } : { backgroundColor: '#FFC107', color: 'black' }}
+                                        >
+                                            {event.status === 'live' ? 'LIVE' : 'UPCOMING'}
+                                        </span>
                                     </div>
                                     <h4>{event.title}</h4>
                                     <p className="popup-instructor">By {event.instructor}</p>
