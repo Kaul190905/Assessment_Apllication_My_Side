@@ -169,31 +169,58 @@ const CalendarView = ({ events = [], onEventClick }) => {
                             <button className="popup-close-btn" onClick={closePopup}>✕</button>
                         </div>
                         <div className="popup-content">
-                            {selectedEvents.map((event, index) => (
-                                <div key={index} className="popup-assessment-card">
-                                    <div className="popup-card-header">
-                                        <span className="subject-tag">{event.subject}</span>
-                                        <span 
-                                            className={`status-badge ${event.status || 'upcoming'}`}
-                                            style={event.status === 'live' ? { backgroundColor: '#dc3545', color: 'white' } : { backgroundColor: '#FFC107', color: 'black' }}
-                                        >
-                                            {event.status === 'live' ? 'LIVE' : 'UPCOMING'}
-                                        </span>
+                            {selectedEvents.map((event, index) => {
+                                // Determine status and styling
+                                const status = event.status || 'upcoming';
+                                let statusLabel = 'UPCOMING';
+                                let statusColor = { backgroundColor: '#FFC107', color: 'black' };
+                                
+                                if (status === 'live') {
+                                    statusLabel = 'LIVE';
+                                    statusColor = { backgroundColor: '#dc3545', color: 'white' };
+                                } else if (status === 'completed') {
+                                    statusLabel = 'COMPLETED';
+                                    statusColor = { backgroundColor: '#28a745', color: 'white' };
+                                } else if (status === 'expired') {
+                                    statusLabel = 'EXPIRED';
+                                    statusColor = { backgroundColor: '#6c757d', color: 'white' };
+                                } else if (status === 'upcoming') {
+                                    statusLabel = 'UPCOMING';
+                                    statusColor = { backgroundColor: '#FFC107', color: 'black' };
+                                }
+                                
+                                return (
+                                    <div key={index} className="popup-assessment-card">
+                                        <div className="popup-card-header">
+                                            <span className="subject-tag">{event.subject}</span>
+                                            <span 
+                                                className={`status-badge ${status}`}
+                                                style={statusColor}
+                                            >
+                                                {statusLabel}
+                                            </span>
+                                        </div>
+                                        <h4>{event.title}</h4>
+                                        <p className="popup-instructor">By {event.instructor}</p>
+                                        <div className="popup-details">
+                                            <p className="popup-timing">
+                                                <span className="detail-icon">🕐</span>
+                                                {event.startTime} - {event.endTime}
+                                            </p>
+                                            <p className="popup-duration">
+                                                <span className="detail-icon">⏱️</span>
+                                                Duration: {event.duration}
+                                            </p>
+                                            {event.percentage !== undefined && (
+                                                <p className="popup-score">
+                                                    <span className="detail-icon">📊</span>
+                                                    Score: {Math.round(event.percentage)}%
+                                                </p>
+                                            )}
+                                        </div>
                                     </div>
-                                    <h4>{event.title}</h4>
-                                    <p className="popup-instructor">By {event.instructor}</p>
-                                    <div className="popup-details">
-                                        <p className="popup-timing">
-                                            <span className="detail-icon">🕐</span>
-                                            {event.startTime} - {event.endTime}
-                                        </p>
-                                        <p className="popup-duration">
-                                            <span className="detail-icon">⏱️</span>
-                                            Duration: {event.duration}
-                                        </p>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

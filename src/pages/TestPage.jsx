@@ -15,8 +15,6 @@ import { questions } from '../data/questions';
 import { formatTime } from '../utils/formatTime';
 import { testService } from '../services/testService';
 
-const EXPECTED_ROLL = "STU2025001";
-
 const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
     const navigate = useNavigate();
     const toast = useToast();
@@ -45,14 +43,12 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
 
     // Submission flow states
     const [showConfirmation, setShowConfirmation] = useState(false);
-    const [showRollInput, setShowRollInput] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
-    const [rollInput, setRollInput] = useState('');
-    const [error, setError] = useState(false);
     const [submitted, setSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const hasAutoSubmitted = useRef(false);
 
-    // Timer warnings
+    // Timer warnings and auto-submit
     useEffect(() => {
         if (timeLeft <= 300 && timeLeft > 60 && !warned5Min.current) {
             warned5Min.current = true;
@@ -68,12 +64,19 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
             setTimerPulse(true);
         }
 
+        // Auto-submit when time expires
+        if (timeLeft <= 0 && !hasAutoSubmitted.current && !submitted) {
+            hasAutoSubmitted.current = true;
+            toast.error('Time is up! Auto-submitting test...', 'Time Expired');
+            handleAutoSubmit();
+        }
+
         // Remove pulse after animation
         if (timerPulse) {
             const timer = setTimeout(() => setTimerPulse(false), 2000);
             return () => clearTimeout(timer);
         }
-    }, [timeLeft, playWarning, toast, timerPulse]);
+    }, [timeLeft, playWarning, toast, timerPulse, submitted]);
 
     useEffect(() => {
         const newVisited = [...visited];
@@ -121,131 +124,129 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
         setCurrentQuestion(index);
     };
 
+    // Submit test to backend
+    const submitTest = async () => {
+        setIsSubmitting(true);
+        
+        try {
+            // Get user data from localStorage (profile data)
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            const studentId = userData.email || userData.id || userData.rollNumber || 'STU2025001';
+            const studentName = userData.name || 'Student';
+
+            // Format answers for backend (Array of objects with option text)
+            const formattedAnswers = answers.map((ansIdx, qIdx) => {
+                const question = testQuestions[qIdx];
+                return ansIdx !== null ? {
+                    questionId: question.id,
+                    selected: question.options[ansIdx]
+                } : null;
+            }).filter(a => a !== null);
+
+            // Calculate time taken
+            const timeTaken = totalTime - timeLeft;
+
+            // Prepare attempt data
+            const attemptData = {
+                studentId: studentId,
+                testId: currentTest?.id || 'demo-test',
+                answers: formattedAnswers,
+                timeTaken: timeTaken,
+            };
+
+            // Submit to backend
+            let result = {};
+            try {
+                result = await testService.submitAttempt(attemptData);
+            } catch (apiErr) {
+                console.warn('API submission failed, using local fallback:', apiErr.message);
+            }
+            
+            // Save to local storage for persistence (especially useful in demo/unauthenticated mode)
+            const localAttempts = JSON.parse(localStorage.getItem('localAttempts') || '[]');
+            localAttempts.push({
+                testId: currentTest?.id,
+                studentId: studentId,
+                studentName: studentName,
+                score: result.score || 0,
+                date: new Date().toISOString(),
+                percentage: result.score ? (result.score / (currentTest?.marks || 1) * 100) : (answers.filter(a => a !== null).length * 2 / (currentTest?.marks || 1) * 100)
+            });
+            localStorage.setItem('localAttempts', JSON.stringify(localAttempts));
+
+            playSuccess();
+            setShowSuccess(true);
+            setSubmitted(true);
+
+            toast.success('Test submitted successfully!');
+
+            // Call onCompleteTest if provided
+            if (onCompleteTest) {
+                const answeredCount = answers.filter(a => a !== null).length;
+                const totalMarks = currentTest?.marks || testQuestions.length * 2;
+                const calculatedScore = result.score || Math.min(answeredCount * 2, totalMarks);
+                onCompleteTest(calculatedScore, totalMarks);
+            }
+
+            // Redirect to dashboard after 3 seconds
+            setTimeout(() => {
+                navigate('/');
+            }, 3000);
+
+        } catch (err) {
+            console.error('Failed to handle submission:', err);
+            toast.error('Submission encountered an error, but your progress was saved.');
+            setIsSubmitting(false);
+            
+            // Local fallback even on major error
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            const studentId = userData.email || userData.id || userData.rollNumber || 'STU2025001';
+            const studentName = userData.name || 'Student';
+            
+            const localAttempts = JSON.parse(localStorage.getItem('localAttempts') || '[]');
+            if (!localAttempts.some(a => a.testId === currentTest?.id)) {
+                localAttempts.push({
+                    testId: currentTest?.id,
+                    studentId: studentId,
+                    studentName: studentName,
+                    date: new Date().toISOString(),
+                    percentage: (answers.filter(a => a !== null).length * 2 / (currentTest?.marks || 1) * 100)
+                });
+                localStorage.setItem('localAttempts', JSON.stringify(localAttempts));
+            }
+
+            playSuccess();
+            setShowSuccess(true);
+            setSubmitted(true);
+
+            setTimeout(() => {
+                navigate('/');
+            }, 3000);
+        }
+    };
+
     // Step 1: Show fullscreen confirmation with question palette
     const handleSubmitClick = () => {
         playClick();
         setShowConfirmation(true);
     };
 
-    // Step 2: User confirms, show roll number input
-    const handleConfirmSubmit = () => {
+    // Step 2: User confirms and submit directly
+    const handleConfirmSubmit = async () => {
         playClick();
         setShowConfirmation(false);
-        setShowRollInput(true);
+        await submitTest();
     };
 
-    // Step 3: Validate roll number and submit to backend
-    const handleFinalSubmit = async () => {
-        if (rollInput.trim() === EXPECTED_ROLL) {
-            setIsSubmitting(true);
-            
-            try {
-                // Get user data
-                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-                const studentId = userData.email || rollInput;
-
-                // Format answers for backend (Array of objects with option text)
-                const formattedAnswers = answers.map((ansIdx, qIdx) => {
-                    const question = testQuestions[qIdx];
-                    return ansIdx !== null ? {
-                        questionId: question.id,
-                        selected: question.options[ansIdx]
-                    } : null;
-                }).filter(a => a !== null);
-
-                // Calculate time taken
-                const timeTaken = totalTime - timeLeft;
-
-                // Prepare attempt data
-                const attemptData = {
-                    studentId: studentId,
-                    testId: currentTest?.id || 'demo-test',
-                    answers: formattedAnswers,
-                    timeTaken: timeTaken,
-                };
-
-                // Submit to backend
-                let result = {};
-                try {
-                    result = await testService.submitAttempt(attemptData);
-                } catch (apiErr) {
-                    console.warn('API submission failed, using local fallback:', apiErr.message);
-                }
-                
-                // Save to local storage for persistence (especially useful in demo/unauthenticated mode)
-                const localAttempts = JSON.parse(localStorage.getItem('localAttempts') || '[]');
-                localAttempts.push({
-                    testId: currentTest?.id,
-                    studentId: studentId,
-                    score: result.score || 0,
-                    date: new Date().toISOString(),
-                    percentage: result.score ? (result.score / (currentTest?.marks || 1) * 100) : (answers.filter(a => a !== null).length * 2 / (currentTest?.marks || 1) * 100)
-                });
-                localStorage.setItem('localAttempts', JSON.stringify(localAttempts));
-
-                playSuccess();
-                setShowRollInput(false);
-                setShowSuccess(true);
-                setSubmitted(true);
-
-                toast.success('Test submitted successfully!');
-
-                // Call onCompleteTest if provided
-                if (onCompleteTest) {
-                    const answeredCount = answers.filter(a => a !== null).length;
-                    const totalMarks = currentTest?.marks || testQuestions.length * 2;
-                    const calculatedScore = result.score || Math.min(answeredCount * 2, totalMarks);
-                    onCompleteTest(calculatedScore, totalMarks);
-                }
-
-                // Redirect to dashboard after 3 seconds
-                setTimeout(() => {
-                    navigate('/');
-                }, 3000);
-
-            } catch (err) {
-                console.error('Failed to handle submission:', err);
-                toast.error('Submission encountered an error, but your progress was saved.');
-                setIsSubmitting(false);
-                
-                // Local fallback even on major error
-                const localAttempts = JSON.parse(localStorage.getItem('localAttempts') || '[]');
-                if (!localAttempts.some(a => a.testId === currentTest?.id)) {
-                    localAttempts.push({
-                        testId: currentTest?.id,
-                        studentId: rollInput,
-                        date: new Date().toISOString(),
-                        percentage: (answers.filter(a => a !== null).length * 2 / (currentTest?.marks || 1) * 100)
-                    });
-                    localStorage.setItem('localAttempts', JSON.stringify(localAttempts));
-                }
-
-                playSuccess();
-                setShowRollInput(false);
-                setShowSuccess(true);
-                setSubmitted(true);
-
-                setTimeout(() => {
-                    navigate('/');
-                }, 3000);
-            }
-        } else {
-            playWarning();
-            setError(true);
-            toast.error('Incorrect roll number');
-        }
+    // Auto-submit handler (called when timer expires)
+    const handleAutoSubmit = async () => {
+        playWarning();
+        await submitTest();
     };
 
     const handleCancelConfirmation = () => {
         playClick();
         setShowConfirmation(false);
-    };
-
-    const handleCancelRollInput = () => {
-        playClick();
-        setShowRollInput(false);
-        setRollInput('');
-        setError(false);
     };
 
     // Calculate statistics
@@ -399,36 +400,7 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
                 </div>
             )}
 
-            {/* Roll Number Input Modal */}
-            {showRollInput && (
-                <div className="modal" onClick={handleCancelRollInput}>
-                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-                        <h2>Verify Identity</h2>
-                        <p>Enter your Roll Number to confirm submission:</p>
-                        <input
-                            type="text"
-                            value={rollInput}
-                            onChange={(e) => {
-                                setRollInput(e.target.value);
-                                if (error) setError(false);
-                            }}
-                            placeholder="e.g. STU2025001"
-                            autoFocus
-                        />
-                        {error && (
-                            <p className="error-text">
-                                Incorrect Roll Number. Please try again.
-                            </p>
-                        )}
-                        <div className="modal-buttons">
-                            <button onClick={handleCancelRollInput}>Cancel</button>
-                            <button onClick={handleFinalSubmit} disabled={isSubmitting}>
-                                {isSubmitting ? 'Submitting...' : 'Submit Test'}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+
 
             {/* Success Notification Modal */}
             {showSuccess && (

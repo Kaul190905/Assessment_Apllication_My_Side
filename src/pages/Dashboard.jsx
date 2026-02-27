@@ -46,14 +46,33 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
     const [showFeedback, setShowFeedback] = useState(false);
     const [selectedTest, setSelectedTest] = useState(null);
 
-    // Fetch published tests from backend
+    // Fetch published tests from backend (initial load with loading state)
     useEffect(() => {
-        fetchPublishedTests();
+        fetchPublishedTests(true); // Show loading skeleton on initial load
     }, []);
 
-    const fetchPublishedTests = async () => {
+    // Automatic refresh to check for expired tests every 60 seconds
+    useEffect(() => {
+        // Set up interval to refresh tests every minute
+        const refreshInterval = setInterval(() => {
+            console.log('Auto-refreshing tests to check for expiration...');
+            fetchPublishedTests(false); // Don't show loading skeleton on auto-refresh
+        }, 60000); // 60 seconds
+
+        // Cleanup interval on component unmount
+        return () => {
+            console.log('Cleaning up auto-refresh interval');
+            clearInterval(refreshInterval);
+        };
+    }, []); // Empty dependency array means this runs once on mount
+
+
+    const fetchPublishedTests = async (showLoading = false) => {
         try {
-            setIsLoading(true);
+            // Only show loading skeleton on initial load, not on auto-refresh
+            if (showLoading) {
+                setIsLoading(true);
+            }
             
             // Check if user has auth token
             const token = localStorage.getItem('authToken');
@@ -124,7 +143,12 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                     // 6. Data for Sorting & Status
                     rawDate: effectiveDate,
                     isScheduled: isScheduled, // This flag can be used to distinguish "Scheduled" vs "Posted" items if needed
-                    status: isUpcoming ? 'upcoming' : 'live'
+                    status: isUpcoming ? 'upcoming' : 'live',
+                    
+                    // 7. Add raw date fields from backend for expiry checking
+                    startDate: test.startDate, // Raw ISO string from backend
+                    endDate: test.endDate,     // Raw ISO string from backend
+                    createdAt: test.createdAt  // Raw ISO string from backend
                 };
             });
 
@@ -180,17 +204,45 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
             // Filter out completed tests from the processed list
             const incompleteTests = processedTests.filter(t => !completedTestIds.has(t.id));
 
+            // Separate expired tests (not completed by student but past endDate)
+            const expiredTests = incompleteTests.filter(t => {
+                if (!t.endDate) return false;
+                const expirationDate = new Date(t.endDate);
+                const isExpired = expirationDate <= now;
+                if (isExpired) {
+                    console.log(`🔴 EXPIRED TEST FOUND: ${t.title}`, {
+                        testId: t.id,
+                        endDate: t.endDate,
+                        expirationDate: expirationDate.toLocaleString(),
+                        now: now.toLocaleString(),
+                        isExpired
+                    });
+                }
+                return isExpired;
+            });
+
+            console.log(`📊 Expired Tests Count: ${expiredTests.length}`, expiredTests.map(t => t.title));
+
+            // Filter out expired tests from active tests
+            const activeTests = incompleteTests.filter(t => {
+                if (!t.endDate) return true; // No expiry date means always active
+                const expirationDate = new Date(t.endDate);
+                return expirationDate > now;
+            });
+
             // Split into Upcoming and Live based on the STRICT Logic requested:
             // "Upcoming" means effectiveDate > now
             // "Live" means effectiveDate <= now
             
-            const upcomingTests = incompleteTests
+            const upcomingTests = activeTests
                 .filter(t => t.rawDate.getTime() > now.getTime())
-                .sort((a, b) => a.rawDate - b.rawDate); // Sort Ascending (Soonest first)
+                .sort((a, b) => a.rawDate - b.rawDate) // Sort Ascending (Soonest first)
+                .map(t => ({ ...t, status: 'upcoming' }));
                 
-            const liveTests = incompleteTests
+            const liveTests = activeTests
                 .filter(t => t.rawDate.getTime() <= now.getTime())
-                .sort((a, b) => b.rawDate - a.rawDate); // Sort Descending (Newest first)
+                .sort((a, b) => b.rawDate - a.rawDate) // Sort Descending (Newest first)
+                .map(t => ({ ...t, status: 'live' }));
 
             const completedTests = processedTests.filter(t => completedTestIds.has(t.id)).map(test => {
                 const attempt = myAttempts.find(a => {
@@ -201,6 +253,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                 });
                 return {
                     ...test,
+                    status: 'completed',
                     percentage: attempt ? attempt.percentage || (attempt.score ? (attempt.score / test.marks * 100) : 0) : 0,
                     score: attempt ? attempt.score : 0,
                     attemptId: attempt ? attempt._id || attempt.id : null
@@ -209,28 +262,46 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
 
 
 
-            // Categorize tests
+            // Categorize tests - add expired tests to missed
+            const missedTests = expiredTests.map(test => ({
+                ...test,
+                status: 'expired'
+            }));
+
+            console.log('📋 Final Categorization:', {
+                upcoming: upcomingTests.length,
+                live: liveTests.length,
+                completed: completedTests.length,
+                missed: missedTests.length
+            });
+
             setAssessments({
                 upcoming: upcomingTests,
                 live: liveTests,
                 completed: completedTests,
-                missed: []
+                missed: missedTests
             });
 
-            if (processedTests.length > 0) {
-                toast.success(`Loaded ${processedTests.length} published test(s)`);
-            } else {
-                toast.info('No published tests available at the moment');
+            // Only show toast notifications on initial load, not during auto-refresh
+            if (showLoading) {
+                if (processedTests.length > 0) {
+                    toast.success(`Loaded ${processedTests.length} published test(s)`);
+                } else {
+                    toast.info('No published tests available at the moment');
+                }
             }
         } catch (error) {
             console.error('Failed to fetch tests:', error);
             
-            // Check if it's an authentication error
-            if (error.message.includes('Not authorized') || error.message.includes('token')) {
-                console.log('Authentication required - using demo mode');
-                toast.info('Using demo mode. Login with backend credentials to see published tests.');
-            } else {
-                toast.error('Failed to load tests from backend');
+            // Only show toast notifications on initial load, not during auto-refresh
+            if (showLoading) {
+                // Check if it's an authentication error
+                if (error.message.includes('Not authorized') || error.message.includes('token')) {
+                    console.log('Authentication required - using demo mode');
+                    toast.info('Using demo mode. Login with backend credentials to see published tests.');
+                } else {
+                    toast.error('Failed to load tests from backend');
+                }
             }
             
             // Fallback to empty state
@@ -513,11 +584,17 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                         <span className="stat-label">Completed</span>
                     </div>
                 </div>
-                <div className="enhanced-stat-card strongest-subject-card clickable" onClick={() => scrollToSection('performance-section')}>
+                <div 
+                    className={`enhanced-stat-card clickable ${activeTab === 'missed' ? 'tab-active' : ''}`}
+                    onClick={() => { playClick(); setActiveTab('missed'); }}
+                >
                     <div className="stat-icon-wrapper star"><StarIcon size={24} /></div>
                     <div className="stat-info">
-                        <span className="stat-subject-name">{strongestSubject.name}</span>
-                        <span className="stat-label">Strongest Field</span>
+                        <AnimatedCounter
+                            end={assessments.missed.length}
+                            className="stat-number"
+                        />
+                        <span className="stat-label">Missed Tests</span>
                     </div>
                 </div>
             </div>
@@ -547,6 +624,26 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                                                 {test.isScheduled ? 'Scheduled:' : 'Posted:'} {test.date} at {test.startTime}
                                             </p>
                                             <p className="test-duration">Duration: {test.duration}</p>
+                                            
+                                            {/* Display expiry date if available */}
+                                            {test.endDate && (
+                                                <p className="test-expiry" style={{ 
+                                                    color: '#ff6b6b', 
+                                                    fontWeight: 'bold', 
+                                                    fontSize: '0.9em',
+                                                    marginTop: '0.5rem',
+                                                    padding: '0.25rem 0.5rem',
+                                                    backgroundColor: '#ffe0e0',
+                                                    borderRadius: '4px',
+                                                    display: 'inline-block'
+                                                }}>
+                                                    ⏰ Expires: {new Date(test.endDate).toLocaleString([], {
+                                                        year: 'numeric', month: 'short', day: 'numeric',
+                                                        hour: '2-digit', minute: '2-digit'
+                                                    })}
+                                                </p>
+                                            )}
+                                            
                                             <button
                                                 className="btn-start"
                                                 onClick={() => handleStartTest(test)}
@@ -574,7 +671,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
 
                         {/* Right Column - Calendar and Activity in Live Section */}
                         <div id="calendar-section" className="widget-column">
-                            <CalendarView events={[...assessments.live, ...assessments.upcoming]} />
+                            <CalendarView events={[...assessments.live, ...assessments.upcoming, ...assessments.completed, ...assessments.missed]} />
                             <ActivityFeed activities={activities} />
                         </div>
                     </div>
@@ -601,6 +698,26 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                                         <p className="instructor">By {test.instructor}</p>
                                         <p className="test-timing">Scheduled: {test.date} at {test.startTime}</p>
                                         <p className="test-duration">Duration: {test.duration}</p>
+                                        
+                                        {/* Display expiry date if available */}
+                                        {test.endDate && (
+                                            <p className="test-expiry" style={{ 
+                                                color: '#ff6b6b', 
+                                                fontWeight: 'bold', 
+                                                fontSize: '0.9em',
+                                                marginTop: '0.5rem',
+                                                padding: '0.25rem 0.5rem',
+                                                backgroundColor: '#ffe0e0',
+                                                borderRadius: '4px',
+                                                display: 'inline-block'
+                                            }}>
+                                                ⏰ Expires: {new Date(test.endDate).toLocaleString([], {
+                                                    year: 'numeric', month: 'short', day: 'numeric',
+                                                    hour: '2-digit', minute: '2-digit'
+                                                })}
+                                            </p>
+                                        )}
+                                        
                                         <button
                                             className="btn-start disabled"
                                             disabled
@@ -615,6 +732,78 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                     ) : (
                         <div className="empty-state">
                             <p>No upcoming assessments scheduled.</p>
+                        </div>
+                    )}
+                </section>
+            )}
+
+            {/* Missed Tests Tab */}
+            {activeTab === 'missed' && (
+                <section id="missed-section" className="assessment-section">
+                    {assessments.missed && assessments.missed.length > 0 ? (
+                        <>
+                            <h2 className="section-title missed-title">
+                                <span className="missed-dot" style={{ backgroundColor: '#ff6b6b' }}></span>
+                                Missed & Expired Tests
+                            </h2>
+                            <div className="topic-boxes-grid">
+                                {Object.entries(groupedMissed).map(([subject, tests]) => (
+                                    <div
+                                        key={subject}
+                                        className={`topic-box missed ${expandedMissed === subject ? 'active' : ''}`}
+                                        onClick={() => toggleMissed(subject)}
+                                    >
+                                        <span className="topic-name">{subject}</span>
+                                        <span className="topic-count">{tests.length}</span>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Expanded Content */}
+                            {expandedMissed && groupedMissed[expandedMissed] && (
+                                <div className="expanded-content missed-content">
+                                    <div className="expanded-header">
+                                        <h3>{expandedMissed}</h3>
+                                        <button className="btn-close" onClick={() => setExpandedMissed(null)}>✕</button>
+                                    </div>
+                                    <div className="assessment-grid">
+                                        {groupedMissed[expandedMissed].map((test) => (
+                                            <div key={test.id} className="assessment-card missed-card">
+                                                <div className="card-header">
+                                                    <span className="subject-tag">{test.subject}</span>
+                                                    <span className="status-badge missed">
+                                                        {test.status === 'expired' ? 'EXPIRED' : 'MISSED'}
+                                                    </span>
+                                                </div>
+                                                <h3>{test.title}</h3>
+                                                <p className="instructor">By {test.instructor}</p>
+                                                <p className="scheduled-date">Was scheduled: {test.date}</p>
+                                                <p className="test-timing missed-timing">
+                                                    Was available: {test.startTime} - {test.endTime}
+                                                </p>
+                                                <p className="test-duration">Duration: {test.duration}</p>
+                                                {test.endDate && (
+                                                    <p className="test-expiry" style={{ 
+                                                        color: '#ff6b6b', 
+                                                        fontWeight: 'bold', 
+                                                        fontSize: '0.85em',
+                                                        marginTop: '0.5rem'
+                                                    }}>
+                                                        ⏰ Expired: {new Date(test.endDate).toLocaleString([], {
+                                                            year: 'numeric', month: 'short', day: 'numeric',
+                                                            hour: '2-digit', minute: '2-digit'
+                                                        })}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    ) : (
+                        <div className="empty-state">
+                            <p>No missed or expired tests.</p>
                         </div>
                     )}
                 </section>
@@ -682,51 +871,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                             )}
                         </section>
 
-                        {/* Missed Assessments - Topic Boxes */}
-                        {assessments.missed && assessments.missed.length > 0 && (
-                            <section className="assessment-section">
-                                <h2 className="section-title missed-title">Missed Assessments</h2>
-                                <div className="topic-boxes-grid">
-                                    {Object.entries(groupedMissed).map(([subject, tests]) => (
-                                        <div
-                                            key={subject}
-                                            className={`topic-box missed ${expandedMissed === subject ? 'active' : ''}`}
-                                            onClick={() => toggleMissed(subject)}
-                                        >
-                                            <span className="topic-name">{subject}</span>
-                                            <span className="topic-count">{tests.length}</span>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Expanded Content */}
-                                {expandedMissed && groupedMissed[expandedMissed] && (
-                                    <div className="expanded-content missed-content">
-                                        <div className="expanded-header">
-                                            <h3>{expandedMissed}</h3>
-                                            <button className="btn-close" onClick={() => setExpandedMissed(null)}>✕</button>
-                                        </div>
-                                        <div className="assessment-grid">
-                                            {groupedMissed[expandedMissed].map((test) => (
-                                                <div key={test.id} className="assessment-card missed-card">
-                                                    <div className="card-header">
-                                                        <span className="subject-tag">{test.subject}</span>
-                                                        <span className="status-badge missed">Missed</span>
-                                                    </div>
-                                                    <h3>{test.title}</h3>
-                                                    <p className="instructor">By {test.instructor}</p>
-                                                    <p className="scheduled-date">Was scheduled: {test.date}</p>
-                                                    <p className="test-timing missed-timing">Was available: {test.startTime} - {test.endTime}</p>
-                                                    <p className="test-duration">Duration: {test.duration}</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </section>
-                        )}
-
-                        {/* Performance Graph - After Missed Assessments */}
+                        {/* Performance Graph */}
                         <div id="performance-section">
                             <PerformanceGraph data={assessments.completed} />
                         </div>
@@ -734,7 +879,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
 
                     {/* Right Column - Calendar and Activity */}
                     <div id="calendar-section" className="widget-column">
-                        <CalendarView events={[...assessments.live, ...assessments.upcoming]} />
+                        <CalendarView events={[...assessments.live, ...assessments.upcoming, ...assessments.completed, ...assessments.missed]} />
                         <ActivityFeed activities={activities} />
                     </div>
                 </div>
