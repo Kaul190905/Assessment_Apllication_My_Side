@@ -1,0 +1,1197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Echo Route - Futuristic Onboarding</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-light: #818cf8;
+            --primary-dark: #4f46e5;
+            --accent: #06b6d4;
+            --accent-glow: rgba(6, 182, 212, 0.4);
+            --success: #10b981;
+            --bg-dark: #0a0a1a;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --glass: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text: #ffffff;
+            --text-muted: rgba(255, 255, 255, 0.6);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: var(--text);
+        }
+
+        /* Animated Background */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .gradient-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.5;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .orb-1 {
+            width: 600px;
+            height: 600px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            top: -200px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, #ec4899, var(--primary));
+            bottom: -100px;
+            left: -100px;
+            animation-delay: -5s;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, var(--accent), var(--success));
+            top: 50%;
+            left: 50%;
+            animation-delay: -10s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(50px, -50px) scale(1.1); }
+            50% { transform: translate(-30px, 30px) scale(0.9); }
+            75% { transform: translate(-50px, -20px) scale(1.05); }
+        }
+
+        /* Grid Pattern Overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            z-index: 1;
+        }
+
+        /* Particle System */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-glow);
+            animation: rise 15s infinite linear;
+        }
+
+        @keyframes rise {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Main Container */
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 40px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 4px;
+            background: var(--glass);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 4px;
+            width: 25%;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 12px;
+            height: 12px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .progress-step {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .progress-step span {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        /* Onboarding Card */
+        .onboarding-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 60px;
+            max-width: 700px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            animation: cardAppear 0.8s ease-out;
+        }
+
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: translateY(40px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .onboarding-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+
+        /* Step Indicator */
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .step-dot {
+            width: 40px;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--glass);
+            transition: all 0.5s ease;
+            cursor: pointer;
+        }
+
+        .step-dot.active {
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            width: 60px;
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .step-dot.completed {
+            background: var(--success);
+        }
+
+        /* Welcome Section */
+        .welcome-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .ai-avatar {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 30px;
+            position: relative;
+        }
+
+        .ai-avatar-inner {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse 2s infinite;
+        }
+
+        .ai-avatar-inner svg {
+            width: 50px;
+            height: 50px;
+            fill: white;
+        }
+
+        .ai-ring {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            animation: spin 8s linear infinite;
+        }
+
+        .ai-ring::before {
+            content: '';
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            width: 10px;
+            height: 10px;
+            background: var(--accent);
+            border-radius: 50%;
+            box-shadow: 0 0 15px var(--accent);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 var(--accent-glow); }
+            50% { transform: scale(1.02); box-shadow: 0 0 40px var(--accent-glow); }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .typing-text {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--text), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        /* Interactive Elements */
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 40px;
+        }
+
+        .option-card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .option-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .option-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 40px var(--accent-glow);
+        }
+
+        .option-card:hover::before {
+            opacity: 0.1;
+        }
+
+        .option-card.selected {
+            border-color: var(--accent);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(6, 182, 212, 0.2));
+        }
+
+        .option-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .option-icon svg {
+            width: 24px;
+            height: 24px;
+            fill: white;
+        }
+
+        .option-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .option-desc {
+            font-size: 14px;
+            color: var(--text-muted);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Action Buttons */
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 50px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-secondary {
+            background: var(--glass);
+            color: var(--text-muted);
+            border: 1px solid var(--glass-border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            box-shadow: 0 4px 20px var(--accent-glow);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px var(--accent-glow);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Skill Tags */
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .skill-tag {
+            padding: 10px 18px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .skill-tag:hover {
+            border-color: var(--accent);
+            background: rgba(6, 182, 212, 0.1);
+        }
+
+        .skill-tag.selected {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-color: transparent;
+        }
+
+        /* Voice Input Indicator */
+        .voice-input {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 30px;
+            padding: 16px;
+            background: var(--glass);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .voice-input:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .voice-waves {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            height: 24px;
+        }
+
+        .voice-wave {
+            width: 4px;
+            background: var(--accent);
+            border-radius: 2px;
+            animation: wave 1s ease-in-out infinite;
+        }
+
+        .voice-wave:nth-child(1) { height: 8px; animation-delay: 0s; }
+        .voice-wave:nth-child(2) { height: 16px; animation-delay: 0.1s; }
+        .voice-wave:nth-child(3) { height: 24px; animation-delay: 0.2s; }
+        .voice-wave:nth-child(4) { height: 16px; animation-delay: 0.3s; }
+        .voice-wave:nth-child(5) { height: 8px; animation-delay: 0.4s; }
+
+        @keyframes wave {
+            0%, 100% { transform: scaleY(1); }
+            50% { transform: scaleY(0.5); }
+        }
+
+        .voice-text {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Personalization Preview */
+        .preview-card {
+            margin-top: 40px;
+            padding: 24px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(6, 182, 212, 0.1));
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+        }
+
+        .preview-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .preview-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--success), var(--accent));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .preview-title {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .preview-content {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .preview-content strong {
+            color: var(--accent);
+        }
+
+        /* Page Navigation Dots */
+        .nav-hint {
+            position: fixed;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            font-size: 13px;
+            animation: bounce 2s infinite;
+        }
+
+        .nav-hint svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-8px); }
+        }
+
+        /* Step Transitions */
+        .step-content {
+            display: none;
+            animation: fadeSlide 0.6s ease-out;
+        }
+
+        .step-content.active {
+            display: block;
+        }
+
+        @keyframes fadeSlide {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* Achievement Badge */
+        .achievement-badge {
+            position: fixed;
+            top: 80px;
+            right: 40px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, #f59e0b, #ef4444);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: slideIn 0.5s ease-out, glow 2s infinite;
+            box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3);
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes glow {
+            0%, 100% { box-shadow: 0 10px 30px rgba(245, 158, 11, 0.3); }
+            50% { box-shadow: 0 10px 40px rgba(245, 158, 11, 0.5); }
+        }
+
+        .badge-icon {
+            font-size: 24px;
+        }
+
+        .badge-text {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* Input Field */
+        .input-group {
+            margin-top: 30px;
+        }
+
+        .input-label {
+            display: block;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 16px 20px;
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 16px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 20px var(--accent-glow);
+        }
+
+        .input-field::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Celebration Screen */
+        .celebration {
+            text-align: center;
+        }
+
+        .celebration-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, var(--success), var(--accent));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: celebratePop 0.6s ease-out;
+        }
+
+        .celebration-icon svg {
+            width: 60px;
+            height: 60px;
+            fill: white;
+        }
+
+        @keyframes celebratePop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        .confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            animation: confettiFall 3s linear forwards;
+        }
+
+        @keyframes confettiFall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .onboarding-card {
+                padding: 40px 24px;
+            }
+
+            .options-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .typing-text {
+                font-size: 24px;
+            }
+
+            .actions {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .achievement-badge {
+                right: 20px;
+                padding: 10px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-container">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+    <div class="grid-overlay"></div>
+    <div class="particles" id="particles"></div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+        <div class="progress-step">Step <span id="currentStep">1</span> of <span>4</span></div>
+    </div>
+
+    <!-- Achievement Badge (shows on step 2) -->
+    <div class="achievement-badge" id="achievementBadge" style="display: none;">
+        <span class="badge-icon">🎯</span>
+        <span class="badge-text">Quick Starter!</span>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <div class="onboarding-card">
+            <!-- Step Indicator -->
+            <div class="step-indicator">
+                <div class="step-dot active" data-step="1"></div>
+                <div class="step-dot" data-step="2"></div>
+                <div class="step-dot" data-step="3"></div>
+                <div class="step-dot" data-step="4"></div>
+            </div>
+
+            <!-- Step 1: Welcome -->
+            <div class="step-content active" data-step="1">
+                <div class="welcome-section">
+                    <div class="ai-avatar">
+                        <div class="ai-ring"></div>
+                        <div class="ai-avatar-inner">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                        </div>
+                    </div>
+                    <h1 class="typing-text" id="welcomeText">Welcome to Echo Route</h1>
+                    <p class="subtitle">I'm your AI learning companion. Let me personalize your experience to help you achieve your goals faster.</p>
+                </div>
+
+                <div class="input-group">
+                    <label class="input-label">What should I call you?</label>
+                    <input type="text" class="input-field" placeholder="Enter your name..." id="userName">
+                </div>
+
+                <div class="voice-input" onclick="toggleVoice()">
+                    <div class="voice-waves" id="voiceWaves">
+                        <div class="voice-wave"></div>
+                        <div class="voice-wave"></div>
+                        <div class="voice-wave"></div>
+                        <div class="voice-wave"></div>
+                        <div class="voice-wave"></div>
+                    </div>
+                    <span class="voice-text">Or speak your name</span>
+                </div>
+
+                <div class="actions">
+                    <div></div>
+                    <button class="btn btn-primary" onclick="nextStep()">
+                        Get Started
+                        <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 2: Goal Selection -->
+            <div class="step-content" data-step="2">
+                <div class="welcome-section">
+                    <h1 class="typing-text">What brings you here?</h1>
+                    <p class="subtitle">Select your primary goal and I'll customize your learning path accordingly.</p>
+                </div>
+
+                <div class="options-grid">
+                    <div class="option-card" onclick="selectOption(this)">
+                        <div class="option-icon">
+                            <svg viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3z M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+                        </div>
+                        <div class="option-title">Academic Excellence</div>
+                        <div class="option-desc">Prepare for exams and boost your grades</div>
+                    </div>
+                    <div class="option-card" onclick="selectOption(this)">
+                        <div class="option-icon">
+                            <svg viewBox="0 0 24 24"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg>
+                        </div>
+                        <div class="option-title">Career Growth</div>
+                        <div class="option-desc">Upskill for job interviews and promotions</div>
+                    </div>
+                    <div class="option-card" onclick="selectOption(this)">
+                        <div class="option-icon">
+                            <svg viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
+                        </div>
+                        <div class="option-title">Skill Building</div>
+                        <div class="option-desc">Learn new technologies and concepts</div>
+                    </div>
+                    <div class="option-card" onclick="selectOption(this)">
+                        <div class="option-icon">
+                            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+                        </div>
+                        <div class="option-title">Practice Tests</div>
+                        <div class="option-desc">Take mock tests and track progress</div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="prevStep()">
+                        <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                        Back
+                    </button>
+                    <button class="btn btn-primary" onclick="nextStep()">
+                        Continue
+                        <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 3: Skill Selection -->
+            <div class="step-content" data-step="3">
+                <div class="welcome-section">
+                    <h1 class="typing-text">What do you want to master?</h1>
+                    <p class="subtitle">Select the subjects and skills you're interested in. You can always add more later.</p>
+                </div>
+
+                <div class="skill-tags">
+                    <div class="skill-tag" onclick="toggleSkill(this)">📊 Mathematics</div>
+                    <div class="skill-tag" onclick="toggleSkill(this)">🔬 Physics</div>
+                    <div class="skill-tag" onclick="toggleSkill(this)">🧪 Chemistry</div>
+                    <div class="skill-tag" onclick="toggleSkill(this)">💻 Computer Science</div>
+                    <div class="skill-tag" onclick="toggleSkill(this)">📖 English</div>
+                    <div class="skill-tag" onclick="toggleSkill(this)">🌍 Geography</div>
+                    <div class="skill-tag" onclick="toggleSkill(this)">📜 History</div>
+                    <div class="skill-tag" onclick="toggleSkill(this)">🧬 Biology</div>
+                    <div class="skill-tag" onclick="toggleSkill(this)">📈 Economics</div>
+                    <div class="skill-tag" onclick="toggleSkill(this)">🎨 Art & Design</div>
+                </div>
+
+                <div class="preview-card">
+                    <div class="preview-header">
+                        <div class="preview-icon">
+                            <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                        </div>
+                        <div class="preview-title">AI-Powered Learning Path</div>
+                    </div>
+                    <div class="preview-content">
+                        Based on your selections, I'll create a personalized learning journey with <strong>adaptive assessments</strong>, <strong>targeted practice</strong>, and <strong>real-time progress tracking</strong>.
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="btn btn-secondary" onclick="prevStep()">
+                        <svg viewBox="0 0 24 24"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                        Back
+                    </button>
+                    <button class="btn btn-primary" onclick="nextStep()">
+                        Almost Done
+                        <svg viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Step 4: Completion -->
+            <div class="step-content" data-step="4">
+                <div class="celebration">
+                    <div class="celebration-icon">
+                        <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+                    </div>
+                    <h1 class="typing-text">You're All Set! 🎉</h1>
+                    <p class="subtitle">Your personalized learning experience is ready. Let's begin your journey to success!</p>
+                </div>
+
+                <div class="preview-card" style="margin-top: 40px;">
+                    <div class="preview-header">
+                        <div class="preview-icon" style="background: linear-gradient(135deg, var(--primary), var(--accent));">
+                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                        </div>
+                        <div class="preview-title">Your Personalized Dashboard Awaits</div>
+                    </div>
+                    <div class="preview-content">
+                        • <strong>3 Recommended Assessments</strong> based on your goals<br>
+                        • <strong>Custom Study Plan</strong> optimized for your schedule<br>
+                        • <strong>AI Tutor</strong> available 24/7 for help
+                    </div>
+                </div>
+
+                <div class="actions" style="justify-content: center; margin-top: 40px;">
+                    <button class="btn btn-primary" onclick="launchDashboard()" style="padding: 18px 48px; font-size: 16px;">
+                        <svg viewBox="0 0 24 24"><path d="M13 3h-2v10h2V3zm4.83 2.17l-1.42 1.42C17.99 7.86 19 9.81 19 12c0 3.87-3.13 7-7 7s-7-3.13-7-7c0-2.19 1.01-4.14 2.58-5.42L6.17 5.17C4.23 6.82 3 9.26 3 12c0 4.97 4.03 9 9 9s9-4.03 9-9c0-2.74-1.23-5.18-3.17-6.83z"/></svg>
+                        Launch My Dashboard
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Hint -->
+    <div class="nav-hint">
+        <svg viewBox="0 0 24 24"><path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6z"/></svg>
+        Scroll or swipe to navigate
+    </div>
+
+    <!-- Confetti Container -->
+    <div class="confetti" id="confetti"></div>
+
+    <script>
+        // Initialize particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 15 + 's';
+                particle.style.animationDuration = (10 + Math.random() * 10) + 's';
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // Typing animation for welcome text
+        function typeWriter(element, text, speed = 50) {
+            element.textContent = '';
+            let i = 0;
+            function type() {
+                if (i < text.length) {
+                    element.textContent += text.charAt(i);
+                    i++;
+                    setTimeout(type, speed);
+                }
+            }
+            type();
+        }
+
+        // Step navigation
+        let currentStep = 1;
+        const totalSteps = 4;
+
+        function updateProgress() {
+            const progressFill = document.getElementById('progressFill');
+            const currentStepEl = document.getElementById('currentStep');
+            const progress = (currentStep / totalSteps) * 100;
+            progressFill.style.width = progress + '%';
+            currentStepEl.textContent = currentStep;
+
+            // Update step dots
+            document.querySelectorAll('.step-dot').forEach((dot, index) => {
+                dot.classList.remove('active', 'completed');
+                if (index + 1 === currentStep) {
+                    dot.classList.add('active');
+                } else if (index + 1 < currentStep) {
+                    dot.classList.add('completed');
+                }
+            });
+
+            // Show achievement badge on step 2
+            const badge = document.getElementById('achievementBadge');
+            if (currentStep === 2) {
+                badge.style.display = 'flex';
+            }
+        }
+
+        function showStep(step) {
+            document.querySelectorAll('.step-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            document.querySelector(`.step-content[data-step="${step}"]`).classList.add('active');
+            
+            // Trigger celebration on last step
+            if (step === 4) {
+                setTimeout(createConfetti, 500);
+            }
+        }
+
+        function nextStep() {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateProgress();
+                showStep(currentStep);
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                currentStep--;
+                updateProgress();
+                showStep(currentStep);
+            }
+        }
+
+        // Option selection
+        function selectOption(element) {
+            document.querySelectorAll('.option-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+
+        // Skill toggle
+        function toggleSkill(element) {
+            element.classList.toggle('selected');
+        }
+
+        // Voice input toggle
+        let voiceActive = false;
+        function toggleVoice() {
+            voiceActive = !voiceActive;
+            const waves = document.getElementById('voiceWaves');
+            waves.style.opacity = voiceActive ? '1' : '0.5';
+        }
+
+        // Confetti celebration
+        function createConfetti() {
+            const container = document.getElementById('confetti');
+            const colors = ['#6366f1', '#06b6d4', '#10b981', '#f59e0b', '#ec4899'];
+            
+            for (let i = 0; i < 100; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.left = Math.random() * 100 + '%';
+                piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.animationDelay = Math.random() * 2 + 's';
+                piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+                if (Math.random() > 0.5) {
+                    piece.style.borderRadius = '50%';
+                }
+                container.appendChild(piece);
+            }
+
+            // Clean up confetti after animation
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        // Launch dashboard
+        function launchDashboard() {
+            // Add launch animation
+            document.querySelector('.onboarding-card').style.transform = 'scale(0.95)';
+            document.querySelector('.onboarding-card').style.opacity = '0';
+            
+            setTimeout(() => {
+                alert('🚀 Launching your personalized dashboard!');
+                // In a real app, redirect to dashboard
+                // window.location.href = '/dashboard';
+            }, 500);
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                typeWriter(document.getElementById('welcomeText'), 'Welcome to Echo Route ✨', 80);
+            }, 500);
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'Enter') {
+                nextStep();
+            } else if (e.key === 'ArrowLeft') {
+                prevStep();
+            }
+        });
+
+        // Step dot click navigation
+        document.querySelectorAll('.step-dot').forEach(dot => {
+            dot.addEventListener('click', () => {
+                const step = parseInt(dot.dataset.step);
+                if (step <= currentStep + 1) {
+                    currentStep = step;
+                    updateProgress();
+                    showStep(step);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
