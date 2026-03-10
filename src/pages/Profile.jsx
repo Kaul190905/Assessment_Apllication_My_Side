@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import ThemeToggle from '../components/ThemeToggle';
-import Breadcrumb from '../components/Breadcrumb';
-import AnimatedCounter, { ProgressRing } from '../components/AnimatedCounter';
+import AnimatedCounter from '../components/AnimatedCounter';
 import AccentColorPicker from '../components/AccentColorPicker';
 import { ProfileSkeleton } from '../components/Skeleton';
 import { useToast } from '../components/Toast';
@@ -11,7 +8,6 @@ import { BookIcon, TargetIcon, CheckCircleIcon, StarIcon } from '../components/I
 import { testService } from '../services/testService';
 
 const Profile = ({ isDark, onThemeToggle, onLogout }) => {
-    const navigate = useNavigate();
     const toast = useToast();
     const { playClick, playSuccess, isEnabled, setEnabled } = useSound();
 
@@ -39,13 +35,13 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
     const fetchAssessmentData = async () => {
         try {
             setIsLoading(true);
-            
+
             // Check if user has auth token
             const token = localStorage.getItem('authToken');
             if (!token) {
                 console.log('No auth token in Profile, but fetching public tests...');
             }
-            
+
             // Fetch published tests (upcoming/live)
             const tests = await testService.getPublishedTests();
             const transformedTests = tests.map(test => ({
@@ -62,7 +58,7 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
                     const allAttempts = await testService.getMyAttempts();
                     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
                     const studentIdentifier = userData.email || 'STU2025001';
-                    
+
                     myAttempts = allAttempts.filter(a => {
                         const sId = (typeof a.studentId === 'object' && a.studentId !== null)
                             ? (a.studentId.email || a.studentId.id || a.studentId._id)
@@ -89,7 +85,7 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
                         myAttempts.push(local);
                     }
                 });
-                
+
                 // Create a set of completed test IDs
                 const completedTestIds = new Set(myAttempts.map(a => {
                     if (typeof a.testId === 'object' && a.testId !== null) {
@@ -143,14 +139,6 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
         }
     };
 
-    const handleLogout = () => {
-        playClick();
-        toast.info('Logging out...');
-        setTimeout(() => {
-            onLogout();
-            navigate('/login');
-        }, 500);
-    };
 
     const handleSoundToggle = () => {
         const newValue = !soundEnabled;
@@ -224,24 +212,7 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
 
     return (
         <div className="profile-page">
-            {/* Breadcrumb */}
-            <Breadcrumb />
-
-            {/* Profile Header */}
-            <header className="dashboard-header">
-                <div className="header-nav">
-                    <button className="btn-back" onClick={() => { playClick(); navigate('/'); }}>
-                        ← Back to Dashboard
-                    </button>
-                    <h1>My Profile</h1>
-                </div>
-                <div className="header-actions">
-                    <button className="btn-logout-small" onClick={handleLogout}>
-                        Logout
-                    </button>
-                    <ThemeToggle isDark={isDark} onToggle={onThemeToggle} />
-                </div>
-            </header>
+            {/* Profile Card */}
 
             {/* Profile Card */}
             <section className="profile-card">

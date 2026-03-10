@@ -28,7 +28,7 @@ const FloatingActionButton = () => {
         {
             icon: <ClipboardIcon size={20} />,
             label: 'My Tests',
-            path: '/',
+            path: '/tests',
             color: 'var(--warning)'
         }
     ];

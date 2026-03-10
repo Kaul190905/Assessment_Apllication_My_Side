@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ThemeToggle from '../components/ThemeToggle';
 import { ClipboardIcon } from '../components/Icons';
 
 const RulesPage = ({ isDark, onThemeToggle, currentTest, onConfirmStart }) => {
@@ -39,17 +38,6 @@ const RulesPage = ({ isDark, onThemeToggle, currentTest, onConfirmStart }) => {
 
     return (
         <div className="rules-page">
-            <header className="dashboard-header">
-                <div className="header-nav">
-                    <button className="btn-back" onClick={handleGoBack}>
-                        ← Back to Dashboard
-                    </button>
-                    <h1>Test Instructions</h1>
-                </div>
-                <div className="header-actions">
-                    <ThemeToggle isDark={isDark} onToggle={onThemeToggle} />
-                </div>
-            </header>
 
             {/* Test Info */}
             <div className="rules-container">

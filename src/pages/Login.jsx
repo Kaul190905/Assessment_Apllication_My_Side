@@ -36,11 +36,11 @@ const Login = ({ isDark, onThemeToggle, onLogin }) => {
         try {
             // Try real API authentication first
             const response = await authService.login(formData.id, formData.password);
-            
+
             // Store token and user data
             localStorage.setItem('authToken', response.token);
             localStorage.setItem('userData', JSON.stringify(response));
-            
+
             onLogin('student');
             navigate('/');
         } catch (err) {
@@ -66,7 +66,7 @@ const Login = ({ isDark, onThemeToggle, onLogin }) => {
     const handleGoogleSuccess = (credentialResponse) => {
         try {
             const decoded = jwtDecode(credentialResponse.credential);
-            
+
             // Map Google user data to app user structure
             const user = {
                 email: decoded.email,
@@ -78,7 +78,7 @@ const Login = ({ isDark, onThemeToggle, onLogin }) => {
 
             localStorage.setItem('authToken', credentialResponse.credential);
             localStorage.setItem('userData', JSON.stringify(user));
-            
+
             onLogin('student');
             navigate('/');
         } catch (error) {
@@ -132,9 +132,8 @@ const Login = ({ isDark, onThemeToggle, onLogin }) => {
                     <ThemeToggle isDark={isDark} onToggle={onThemeToggle} />
                 </div>
 
-                {/* Logo/Title */}
                 <div className="login-header">
-                    <img src={isDark ? "/logo-dark.png" : "/logo.png"} alt="Gradeflow" className="login-logo-img" />
+                    <img src="/gradeflow-logo.png" alt="Gradeflow" className="login-logo-img" style={{ width: '80px', marginBottom: '1rem' }} />
                     <p>Sign in to continue</p>
                 </div>
 

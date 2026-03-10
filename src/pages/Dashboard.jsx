@@ -1,18 +1,15 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { groupBySubject } from '../data/assessments';
-import ThemeToggle from '../components/ThemeToggle';
-import Breadcrumb from '../components/Breadcrumb';
 import AnimatedCounter from '../components/AnimatedCounter';
 import PerformanceGraph from '../components/PerformanceGraph';
 import CalendarView from '../components/CalendarView';
 import ActivityFeed from '../components/ActivityFeed';
 import FloatingActionButton from '../components/FloatingActionButton';
-import MobileSidebar, { HamburgerButton } from '../components/MobileSidebar';
 import { DashboardSkeleton } from '../components/Skeleton';
 import { useToast } from '../components/Toast';
 import useSound from '../hooks/useSound';
-import { BookIcon, TargetIcon, CheckCircleIcon, ChartIcon, StarIcon } from '../components/Icons';
+import { BookIcon, TargetIcon, CheckCircleIcon, AlertCircleIcon } from '../components/Icons';
 import { testService } from '../services/testService';
 
 const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
@@ -31,14 +28,10 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
         missed: []
     });
 
-    // Mobile sidebar state
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-
-    // Tab state for filtering sessions
+    // State for categorizing tests by subject or status
     const [activeTab, setActiveTab] = useState('live');
 
-    // State for expanded subject groups
-    const [expandedUpcoming, setExpandedUpcoming] = useState(null);
+    // For expanding/collapsing subject groups
     const [expandedCompleted, setExpandedCompleted] = useState(null);
     const [expandedMissed, setExpandedMissed] = useState(null);
 
@@ -46,34 +39,13 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
     const [showFeedback, setShowFeedback] = useState(false);
     const [selectedTest, setSelectedTest] = useState(null);
 
-    // Fetch published tests from backend (initial load with loading state)
-    useEffect(() => {
-        fetchPublishedTests(true); // Show loading skeleton on initial load
-    }, []);
-
-    // Automatic refresh to check for expired tests every 60 seconds
-    useEffect(() => {
-        // Set up interval to refresh tests every minute
-        const refreshInterval = setInterval(() => {
-            console.log('Auto-refreshing tests to check for expiration...');
-            fetchPublishedTests(false); // Don't show loading skeleton on auto-refresh
-        }, 60000); // 60 seconds
-
-        // Cleanup interval on component unmount
-        return () => {
-            console.log('Cleaning up auto-refresh interval');
-            clearInterval(refreshInterval);
-        };
-    }, []); // Empty dependency array means this runs once on mount
-
-
-    const fetchPublishedTests = async (showLoading = false) => {
+    const fetchPublishedTests = useCallback(async (showLoading = false) => {
         try {
             // Only show loading skeleton on initial load, not on auto-refresh
             if (showLoading) {
                 setIsLoading(true);
             }
-            
+
             // Check if user has auth token
             const token = localStorage.getItem('authToken');
             if (!token) {
@@ -82,18 +54,18 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
 
             const tests = await testService.getPublishedTests();
             console.log('Fetched tests from backend:', tests);
-            
+
             // Transform backend tests to match your UI format
             // Logic implemented per user request: UTC -> Local Time conversion & Strict Categorization
-            
+
             const now = new Date();
             console.log("Current Dashboard Time:", now.toString());
 
             const processedTests = tests.map(test => {
                 // 1. Detect Scheduled Date (UTC from backend)
                 // STRICTLY prioritize 'startDate' as per 'gradeflow' schema, but allow fallback to 'scheduledDate' for limited backward compat if needed.
-                const rawSchedule = test.startDate || test.scheduledDate; 
-                
+                const rawSchedule = test.startDate || test.scheduledDate;
+
                 let effectiveDate = null;
                 let isScheduled = false;
 
@@ -112,39 +84,39 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                     effectiveDate = new Date(test.createdAt);
                     isScheduled = false;
                 }
-                
+
                 // 4. Categorization Logic
                 // "Upcoming" means strictly in the future
                 const isUpcoming = effectiveDate.getTime() > now.getTime();
-                
+
                 return {
                     id: test.testId,
                     title: test.topic,
                     subject: test.topic,
                     instructor: 'Staff',
-                    
+
                     // 5. Formatted Display
                     date: effectiveDate.toLocaleDateString(),
-                    
+
                     // Formatted Time (e.g., "02:30 PM")
                     startTime: effectiveDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true }),
-                    
+
                     // Duration: Pass raw minutes for logic (Timer) and formatted string for UI
                     // Fallback to 60 minutes (schema default) if not provided, avoiding count-based heuristic
-                    durationMinutes: test.duration || 60, 
+                    durationMinutes: test.duration || 60,
                     duration: test.duration ? `${test.duration} mins` : '60 mins',
-                    
+
                     questions: test.count,
                     marks: test.count * 2,
                     questionsData: test.questions,
                     difficulty: test.difficulty,
                     endTime: '11:59 PM',
-                    
+
                     // 6. Data for Sorting & Status
                     rawDate: effectiveDate,
                     isScheduled: isScheduled, // This flag can be used to distinguish "Scheduled" vs "Posted" items if needed
                     status: isUpcoming ? 'upcoming' : 'live',
-                    
+
                     // 7. Add raw date fields from backend for expiry checking
                     startDate: test.startDate, // Raw ISO string from backend
                     endDate: test.endDate,     // Raw ISO string from backend
@@ -154,14 +126,14 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
 
             // Fetch student attempts to categorize tests
             let myAttempts = [];
-            
+
             // 1. Try fetching from backend
             try {
                 const allAttempts = await testService.getMyAttempts();
                 // Get current student identifier (matches logic in TestPage)
                 const userData = JSON.parse(localStorage.getItem('userData') || '{}');
                 const studentIdentifier = userData.email || 'STU2025001';
-                
+
                 // Filter attempts for this student
                 myAttempts = allAttempts.filter(a => {
                     const sId = (typeof a.studentId === 'object' && a.studentId !== null)
@@ -186,7 +158,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                         : a.testId;
                     return tId === local.testId;
                 });
-                
+
                 if (!exists && local.studentId === studentIdentifier) {
                     myAttempts.push(local);
                 }
@@ -210,7 +182,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                 const expirationDate = new Date(t.endDate);
                 const isExpired = expirationDate <= now;
                 if (isExpired) {
-                    console.log(`🔴 EXPIRED TEST FOUND: ${t.title}`, {
+                    console.log(`🔴 EXPIRED TEST FOUND: ${t.title} `, {
                         testId: t.id,
                         endDate: t.endDate,
                         expirationDate: expirationDate.toLocaleString(),
@@ -221,7 +193,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                 return isExpired;
             });
 
-            console.log(`📊 Expired Tests Count: ${expiredTests.length}`, expiredTests.map(t => t.title));
+            console.log(`📊 Expired Tests Count: ${expiredTests.length} `, expiredTests.map(t => t.title));
 
             // Filter out expired tests from active tests
             const activeTests = incompleteTests.filter(t => {
@@ -233,12 +205,12 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
             // Split into Upcoming and Live based on the STRICT Logic requested:
             // "Upcoming" means effectiveDate > now
             // "Live" means effectiveDate <= now
-            
+
             const upcomingTests = activeTests
                 .filter(t => t.rawDate.getTime() > now.getTime())
                 .sort((a, b) => a.rawDate - b.rawDate) // Sort Ascending (Soonest first)
                 .map(t => ({ ...t, status: 'upcoming' }));
-                
+
             const liveTests = activeTests
                 .filter(t => t.rawDate.getTime() <= now.getTime())
                 .sort((a, b) => b.rawDate - a.rawDate) // Sort Descending (Newest first)
@@ -292,7 +264,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
             }
         } catch (error) {
             console.error('Failed to fetch tests:', error);
-            
+
             // Only show toast notifications on initial load, not during auto-refresh
             if (showLoading) {
                 // Check if it's an authentication error
@@ -303,7 +275,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                     toast.error('Failed to load tests from backend');
                 }
             }
-            
+
             // Fallback to empty state
             setAssessments({
                 upcoming: [],
@@ -314,7 +286,27 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [toast]);
+
+    // Fetch published tests from backend (initial load with loading state)
+    useEffect(() => {
+        fetchPublishedTests(true); // Show loading skeleton on initial load
+    }, [fetchPublishedTests]);
+
+    // Automatic refresh to check for expired tests every 60 seconds
+    useEffect(() => {
+        // Set up interval to refresh tests every minute
+        const refreshInterval = setInterval(() => {
+            console.log('Auto-refreshing tests to check for expiration...');
+            fetchPublishedTests(false); // Don't show loading skeleton on auto-refresh
+        }, 60000); // 60 seconds
+
+        // Cleanup interval on component unmount
+        return () => {
+            console.log('Cleaning up auto-refresh interval');
+            clearInterval(refreshInterval);
+        };
+    }, [fetchPublishedTests]);
 
     const handleStartTest = (test) => {
         // Prevent re-taking completed tests
@@ -339,15 +331,6 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
         navigate('/rules');
     };
 
-    const handleProfileClick = () => {
-        playClick();
-        navigate('/profile');
-    };
-
-    const toggleUpcoming = (subject) => {
-        playClick();
-        setExpandedUpcoming(prev => prev === subject ? null : subject);
-    };
 
     const toggleCompleted = (subject) => {
         playClick();
@@ -369,20 +352,6 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
     const closeFeedback = () => {
         setShowFeedback(false);
         setSelectedTest(null);
-    };
-
-    const handleLogout = () => {
-        onLogout();
-        navigate('/login');
-    };
-
-    // Scroll to section function
-    const scrollToSection = (sectionId) => {
-        playClick();
-        const element = document.getElementById(sectionId);
-        if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
     };
 
     // Generate recommendations based on score
@@ -438,42 +407,13 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
         }
     };
 
+
     // Group assessments by subject
-    const groupedUpcoming = groupBySubject(assessments.upcoming);
     const groupedCompleted = groupBySubject(assessments.completed);
     const groupedMissed = assessments.missed ? groupBySubject(assessments.missed) : {};
 
     // Calculate stats
     const totalTests = assessments.completed.length;
-    const avgScore = totalTests > 0
-        ? Math.round(assessments.completed.reduce((acc, test) => acc + test.percentage, 0) / totalTests)
-        : 0;
-
-    // Calculate strongest subject (subject with highest average score)
-    const getStrongestSubject = () => {
-        if (assessments.completed.length === 0) return { name: 'N/A', score: 0 };
-
-        const subjectScores = {};
-        assessments.completed.forEach(test => {
-            if (!subjectScores[test.subject]) {
-                subjectScores[test.subject] = { total: 0, count: 0 };
-            }
-            subjectScores[test.subject].total += test.percentage;
-            subjectScores[test.subject].count += 1;
-        });
-
-        let strongest = { name: 'N/A', avgScore: 0 };
-        Object.entries(subjectScores).forEach(([subject, data]) => {
-            const avg = data.total / data.count;
-            if (avg > strongest.avgScore) {
-                strongest = { name: subject, avgScore: Math.round(avg) };
-            }
-        });
-
-        return strongest;
-    };
-
-    const strongestSubject = getStrongestSubject();
 
     // Generate specialized activities
     const activities = [];
@@ -484,11 +424,11 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
         // Using rawDate (test schedule) as a proxy for now
         const lastAttended = [...assessments.completed].sort((a, b) => b.rawDate - a.rawDate)[0];
         const gradeInfo = getRecommendations(lastAttended);
-        
+
         activities.push({
             type: 'test_completed',
-            title: `Last Attended: ${lastAttended.title}`,
-            description: `Score: ${Math.round(lastAttended.percentage)}% • Grade: ${gradeInfo.grade}`,
+            title: `Last Attended: ${lastAttended.title} `,
+            description: `Score: ${Math.round(lastAttended.percentage)}% • Grade: ${gradeInfo.grade} `,
             timestamp: lastAttended.date,
             id: 'last-attended'
         });
@@ -498,11 +438,11 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
     const allActive = [...assessments.live, ...assessments.upcoming];
     if (allActive.length > 0) {
         const recentPosted = allActive.sort((a, b) => b.rawDate - a.rawDate)[0];
-        
+
         activities.push({
             type: 'announcement',
-            title: `Recent Test Posted: ${recentPosted.title}`,
-            description: `Scheduled for ${recentPosted.date} at ${recentPosted.startTime}`,
+            title: `Recent Test Posted: ${recentPosted.title} `,
+            description: `Scheduled for ${recentPosted.date} at ${recentPosted.startTime} `,
             timestamp: 'New',
             id: 'recent-posted'
         });
@@ -518,35 +458,10 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
 
     return (
         <div className="dashboard">
-            {/* Mobile Sidebar */}
-            <MobileSidebar
-                isOpen={sidebarOpen}
-                onClose={() => setSidebarOpen(false)}
-                onLogout={handleLogout}
-            />
-
-            {/* Breadcrumb Navigation */}
-            <Breadcrumb />
-
-            {/* Dashboard Header */}
-            <header className="dashboard-header">
-                <div className="header-left-section">
-                    <HamburgerButton onClick={() => setSidebarOpen(true)} />
-                    <h1>Student Dashboard</h1>
-                </div>
-                <div className="header-actions">
-                    <div className="student-info clickable" onClick={handleProfileClick}>
-                        <img src="https://via.placeholder.com/40" alt="Avatar" className="avatar" />
-                        <span>John Doe</span>
-                    </div>
-                    <ThemeToggle isDark={isDark} onToggle={onThemeToggle} />
-                </div>
-            </header>
-
             {/* Enhanced Stats Grid - Now works as Tab Navigation */}
             <div className="enhanced-stats-grid">
-                <div 
-                    className={`enhanced-stat-card clickable ${activeTab === 'upcoming' ? 'tab-active' : ''}`} 
+                <div
+                    className={`enhanced-stat-card clickable ${activeTab === 'upcoming' ? 'tab-active' : ''}`}
                     onClick={() => { playClick(); setActiveTab('upcoming'); }}
                 >
                     <div className="stat-icon-wrapper primary"><BookIcon size={24} /></div>
@@ -558,8 +473,8 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                         <span className="stat-label">Upcoming Tests</span>
                     </div>
                 </div>
-                <div 
-                    className={`enhanced-stat-card live clickable ${activeTab === 'live' ? 'tab-active' : ''}`} 
+                <div
+                    className={`enhanced-stat-card live clickable ${activeTab === 'live' ? 'tab-active' : ''}`}
                     onClick={() => { playClick(); setActiveTab('live'); }}
                 >
                     <div className="stat-icon-wrapper danger"><TargetIcon size={24} /></div>
@@ -571,8 +486,8 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                         <span className="stat-label">Live Now</span>
                     </div>
                 </div>
-                <div 
-                    className={`enhanced-stat-card clickable ${activeTab === 'completed' ? 'tab-active' : ''}`} 
+                <div
+                    className={`enhanced-stat-card clickable ${activeTab === 'completed' ? 'tab-active' : ''}`}
                     onClick={() => { playClick(); setActiveTab('completed'); }}
                 >
                     <div className="stat-icon-wrapper warning"><CheckCircleIcon size={24} /></div>
@@ -584,11 +499,11 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                         <span className="stat-label">Completed</span>
                     </div>
                 </div>
-                <div 
+                <div
                     className={`enhanced-stat-card clickable ${activeTab === 'missed' ? 'tab-active' : ''}`}
                     onClick={() => { playClick(); setActiveTab('missed'); }}
                 >
-                    <div className="stat-icon-wrapper star"><StarIcon size={24} /></div>
+                    <div className="stat-icon-wrapper star"><AlertCircleIcon size={24} /></div>
                     <div className="stat-info">
                         <AnimatedCounter
                             end={assessments.missed.length}
@@ -624,12 +539,12 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                                                 {test.isScheduled ? 'Scheduled:' : 'Posted:'} {test.date} at {test.startTime}
                                             </p>
                                             <p className="test-duration">Duration: {test.duration}</p>
-                                            
+
                                             {/* Display expiry date if available */}
                                             {test.endDate && (
-                                                <p className="test-expiry" style={{ 
-                                                    color: '#ff6b6b', 
-                                                    fontWeight: 'bold', 
+                                                <p className="test-expiry" style={{
+                                                    color: '#ff6b6b',
+                                                    fontWeight: 'bold',
                                                     fontSize: '0.9em',
                                                     marginTop: '0.5rem',
                                                     padding: '0.25rem 0.5rem',
@@ -643,7 +558,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                                                     })}
                                                 </p>
                                             )}
-                                            
+
                                             <button
                                                 className="btn-start"
                                                 onClick={() => handleStartTest(test)}
@@ -698,12 +613,12 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                                         <p className="instructor">By {test.instructor}</p>
                                         <p className="test-timing">Scheduled: {test.date} at {test.startTime}</p>
                                         <p className="test-duration">Duration: {test.duration}</p>
-                                        
+
                                         {/* Display expiry date if available */}
                                         {test.endDate && (
-                                            <p className="test-expiry" style={{ 
-                                                color: '#ff6b6b', 
-                                                fontWeight: 'bold', 
+                                            <p className="test-expiry" style={{
+                                                color: '#ff6b6b',
+                                                fontWeight: 'bold',
                                                 fontSize: '0.9em',
                                                 marginTop: '0.5rem',
                                                 padding: '0.25rem 0.5rem',
@@ -717,7 +632,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                                                 })}
                                             </p>
                                         )}
-                                        
+
                                         <button
                                             className="btn-start disabled"
                                             disabled
@@ -750,7 +665,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                                 {Object.entries(groupedMissed).map(([subject, tests]) => (
                                     <div
                                         key={subject}
-                                        className={`topic-box missed ${expandedMissed === subject ? 'active' : ''}`}
+                                        className={`topic - box missed ${expandedMissed === subject ? 'active' : ''} `}
                                         onClick={() => toggleMissed(subject)}
                                     >
                                         <span className="topic-name">{subject}</span>
@@ -783,9 +698,9 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                                                 </p>
                                                 <p className="test-duration">Duration: {test.duration}</p>
                                                 {test.endDate && (
-                                                    <p className="test-expiry" style={{ 
-                                                        color: '#ff6b6b', 
-                                                        fontWeight: 'bold', 
+                                                    <p className="test-expiry" style={{
+                                                        color: '#ff6b6b',
+                                                        fontWeight: 'bold',
                                                         fontSize: '0.85em',
                                                         marginTop: '0.5rem'
                                                     }}>
@@ -822,7 +737,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                                         {Object.entries(groupedCompleted).map(([subject, tests]) => (
                                             <div
                                                 key={subject}
-                                                className={`topic-box completed ${expandedCompleted === subject ? 'active' : ''}`}
+                                                className={`topic - box completed ${expandedCompleted === subject ? 'active' : ''} `}
                                                 onClick={() => toggleCompleted(subject)}
                                             >
                                                 <span className="topic-name">{subject}</span>
@@ -897,7 +812,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
 
                         {/* Illustration Area */}
                         <div className="summary-illustration">
-                            <div className={`illustration-icon ${getRecommendations(selectedTest).gradeClass}`}>
+                            <div className={`illustration - icon ${getRecommendations(selectedTest).gradeClass} `}>
                                 {getRecommendations(selectedTest).gradeClass === 'excellent' && '🎯'}
                                 {getRecommendations(selectedTest).gradeClass === 'good' && '✨'}
                                 {getRecommendations(selectedTest).gradeClass === 'average' && '📈'}
@@ -909,7 +824,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                         <div className="summary-header">
                             <h2>Assessment Complete</h2>
                             <p className="summary-title">{selectedTest.title}</p>
-                            <span className={`summary-grade ${getRecommendations(selectedTest).gradeClass}`}>
+                            <span className={`summary - grade ${getRecommendations(selectedTest).gradeClass} `}>
                                 {getRecommendations(selectedTest).grade}
                             </span>
                         </div>

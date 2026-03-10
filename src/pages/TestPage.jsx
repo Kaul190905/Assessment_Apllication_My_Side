@@ -22,7 +22,7 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
 
     // Use questions from currentTest if available, ensuring it's an array
     const testQuestions = (currentTest?.questionsData && Array.isArray(currentTest.questionsData) && currentTest.questionsData.length > 0)
-        ? currentTest.questionsData 
+        ? currentTest.questionsData
         : questions;
 
     // Determine total time: try numeric durationMinutes first, fallback to parsing string, default to 60 mins
@@ -127,7 +127,7 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
     // Submit test to backend
     const submitTest = async () => {
         setIsSubmitting(true);
-        
+
         try {
             // Get user data from localStorage (profile data)
             const userData = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -161,7 +161,7 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
             } catch (apiErr) {
                 console.warn('API submission failed, using local fallback:', apiErr.message);
             }
-            
+
             // Save to local storage for persistence (especially useful in demo/unauthenticated mode)
             const localAttempts = JSON.parse(localStorage.getItem('localAttempts') || '[]');
             localAttempts.push({
@@ -197,12 +197,12 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
             console.error('Failed to handle submission:', err);
             toast.error('Submission encountered an error, but your progress was saved.');
             setIsSubmitting(false);
-            
+
             // Local fallback even on major error
             const userData = JSON.parse(localStorage.getItem('userData') || '{}');
             const studentId = userData.email || userData.id || userData.rollNumber || 'STU2025001';
             const studentName = userData.name || 'Student';
-            
+
             const localAttempts = JSON.parse(localStorage.getItem('localAttempts') || '[]');
             if (!localAttempts.some(a => a.testId === currentTest?.id)) {
                 localAttempts.push({
@@ -266,6 +266,7 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
                 title={currentTest?.title}
                 instructor={currentTest?.instructor}
                 duration={currentTest?.duration}
+                isExam={true}
             />
 
             {/* Progress Bar with Submit Button */}
