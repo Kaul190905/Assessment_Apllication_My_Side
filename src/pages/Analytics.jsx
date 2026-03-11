@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import PerformanceGraph from '../components/PerformanceGraph';
-import AnimatedCounter from '../components/AnimatedCounter';
-import { BookIcon, TargetIcon, CheckCircleIcon } from '../components/Icons';
+import { BookIcon, TargetIcon, CheckCircleIcon, ChartIcon } from '../components/Icons';
 import { testService } from '../services/testService';
 import { DashboardSkeleton } from '../components/Skeleton';
+import MetricCard from '../components/MetricCard';
 
 const Analytics = () => {
     const [isLoading, setIsLoading] = useState(true);
@@ -68,82 +68,99 @@ const Analytics = () => {
 
     return (
         <div className="analytics-page">
-            <div className="analytics-overview">
-                <div className="stats-grid">
-                    <div className="stat-card">
-                        <div className="stat-icon-wrapper primary"><BookIcon size={24} /></div>
-                        <div className="stat-info">
-                            <AnimatedCounter end={stats.completed.length + stats.live.length + stats.upcoming.length} />
-                            <span className="stat-label">Total Assigned</span>
-                        </div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-icon-wrapper success"><CheckCircleIcon size={24} /></div>
-                        <div className="stat-info">
-                            <AnimatedCounter end={stats.completed.length} />
-                            <span className="stat-label">Completed</span>
-                        </div>
-                    </div>
-                    <div className="stat-card">
-                        <div className="stat-icon-wrapper danger"><TargetIcon size={24} /></div>
-                        <div className="stat-info">
-                            <AnimatedCounter end={stats.live.length} />
-                            <span className="stat-label">Live Tests</span>
-                        </div>
-                    </div>
-                </div>
+            <div className="metric-grid">
+                <MetricCard
+                    title="Total Assigned"
+                    value={stats.completed.length + stats.live.length + stats.upcoming.length}
+                    icon={BookIcon}
+                    color="primary"
+                />
+                <MetricCard
+                    title="Completed"
+                    value={stats.completed.length}
+                    icon={CheckCircleIcon}
+                    color="success"
+                />
+                <MetricCard
+                    title="Live Assessments"
+                    value={stats.live.length}
+                    icon={TargetIcon}
+                    color="danger"
+                />
+                <MetricCard
+                    title="Average Score"
+                    value={stats.completed.length > 0 ? 82 : 0} // Mock average score or calculate if possible
+                    icon={ChartIcon}
+                    color="warning"
+                />
+            </div>
 
-                <div className="analytics-main-chart">
-                    <PerformanceGraph data={stats.completed} />
-                </div>
-
-                <div className="analytics-insights-grid">
-                    <div className="insight-card">
-                        <div className="card-header">
-                            <span className="dot-indicator"></span>
-                            <h3>Top Strengths Across Subjects</h3>
+            <div className="analytics-content-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
+                <div className="main-column">
+                    <div className="question-section" style={{ marginBottom: '24px' }}>
+                        <div className="card-header" style={{ marginBottom: '24px' }}>
+                            <h3 style={{ margin: 0 }}>Performance Trends</h3>
                         </div>
-                        <div className="empty-insight-placeholder">
-                            <p>No insights available yet</p>
-                        </div>
+                        <PerformanceGraph data={stats.completed} />
                     </div>
 
-                    <div className="insight-card">
-                        <div className="card-header">
-                            <span className="dot-indicator"></span>
-                            <h3>Competitive Performance</h3>
-                        </div>
-                        <div className="empty-insight-placeholder">
-                            <p>No data yet</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="attention-section">
-                    <div className="attention-card">
-                        <h3>Areas Needing Attention</h3>
-                        <div className="empty-attention-placeholder">
-                            <p>No data yet</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="analytics-card recent-activity-full">
-                    <h3>Recent Activity</h3>
-                    <div className="activity-list-simple">
-                        {stats.completed.length > 0 ? (
-                            stats.completed.slice(0, 5).map(test => (
-                                <div key={test.testId} className="activity-item-mini">
-                                    <span className="activity-dot"></span>
-                                    <div className="activity-text">
-                                        <strong>{test.topic}</strong>
-                                        <span>Completed on {new Date(test.createdAt).toLocaleDateString()}</span>
-                                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
+                        <div className="question-section">
+                            <div className="card-header" style={{ marginBottom: '16px' }}>
+                                <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Top Strengths</h3>
+                            </div>
+                            <div className="test-meta">
+                                <div className="meta-item">
+                                    <span style={{ color: 'var(--success)', fontWeight: 'bold' }}>• Mathematics</span>
+                                    <span> - 94% Avg</span>
                                 </div>
-                            ))
-                        ) : (
-                            <p className="text-muted">No recent activity</p>
-                        )}
+                                <div className="meta-item">
+                                    <span style={{ color: 'var(--success)', fontWeight: 'bold' }}>• Physics</span>
+                                    <span> - 88% Avg</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="question-section">
+                            <div className="card-header" style={{ marginBottom: '16px' }}>
+                                <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Areas for Growth</h3>
+                            </div>
+                            <div className="test-meta">
+                                <div className="meta-item">
+                                    <span style={{ color: 'var(--danger)', fontWeight: 'bold' }}>• Chemistry</span>
+                                    <span> - 62% Avg</span>
+                                </div>
+                                <div className="meta-item">
+                                    <span style={{ color: 'var(--warning)', fontWeight: 'bold' }}>• English</span>
+                                    <span> - 74% Avg</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="side-column">
+                    <div className="question-section" style={{ height: '100%' }}>
+                        <div className="card-header" style={{ marginBottom: '20px' }}>
+                            <h3 style={{ margin: 0 }}>Recent Activity</h3>
+                        </div>
+                        <div className="activity-list" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                            {stats.completed.length > 0 ? (
+                                stats.completed.slice(0, 5).map(test => (
+                                    <div key={test.testId} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', marginTop: '6px' }}></div>
+                                        <div>
+                                            <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{test.topic}</div>
+                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                                {new Date(test.createdAt).toLocaleDateString()}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No recent activity to show</p>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { groupBySubject } from '../data/assessments';
-import AnimatedCounter from '../components/AnimatedCounter';
 import PerformanceGraph from '../components/PerformanceGraph';
 import CalendarView from '../components/CalendarView';
 import ActivityFeed from '../components/ActivityFeed';
@@ -9,8 +8,9 @@ import FloatingActionButton from '../components/FloatingActionButton';
 import { DashboardSkeleton } from '../components/Skeleton';
 import { useToast } from '../components/Toast';
 import useSound from '../hooks/useSound';
-import { BookIcon, TargetIcon, CheckCircleIcon, AlertCircleIcon } from '../components/Icons';
+import { BookIcon, TargetIcon, CheckCircleIcon, AlertCircleIcon, ClockIcon } from '../components/Icons';
 import { testService } from '../services/testService';
+import MetricCard from '../components/MetricCard';
 
 const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
     const navigate = useNavigate();
@@ -458,60 +458,40 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
 
     return (
         <div className="dashboard">
-            {/* Enhanced Stats Grid - Now works as Tab Navigation */}
-            <div className="enhanced-stats-grid">
-                <div
-                    className={`enhanced-stat-card clickable ${activeTab === 'upcoming' ? 'tab-active' : ''}`}
+            {/* Modern Metric Grid */}
+            <div className="metric-grid">
+                <MetricCard
+                    title="Upcoming"
+                    value={assessments.upcoming.length}
+                    icon={BookIcon}
+                    color="primary"
+                    active={activeTab === 'upcoming'}
                     onClick={() => { playClick(); setActiveTab('upcoming'); }}
-                >
-                    <div className="stat-icon-wrapper primary"><BookIcon size={24} /></div>
-                    <div className="stat-info">
-                        <AnimatedCounter
-                            end={assessments.upcoming.length}
-                            className="stat-number"
-                        />
-                        <span className="stat-label">Upcoming Tests</span>
-                    </div>
-                </div>
-                <div
-                    className={`enhanced-stat-card live clickable ${activeTab === 'live' ? 'tab-active' : ''}`}
+                />
+                <MetricCard
+                    title="Live Now"
+                    value={assessments.live.length}
+                    icon={TargetIcon}
+                    color="danger"
+                    active={activeTab === 'live'}
                     onClick={() => { playClick(); setActiveTab('live'); }}
-                >
-                    <div className="stat-icon-wrapper danger"><TargetIcon size={24} /></div>
-                    <div className="stat-info">
-                        <AnimatedCounter
-                            end={assessments.live.length}
-                            className="stat-number"
-                        />
-                        <span className="stat-label">Live Now</span>
-                    </div>
-                </div>
-                <div
-                    className={`enhanced-stat-card clickable ${activeTab === 'completed' ? 'tab-active' : ''}`}
+                />
+                <MetricCard
+                    title="Completed"
+                    value={totalTests}
+                    icon={CheckCircleIcon}
+                    color="success"
+                    active={activeTab === 'completed'}
                     onClick={() => { playClick(); setActiveTab('completed'); }}
-                >
-                    <div className="stat-icon-wrapper warning"><CheckCircleIcon size={24} /></div>
-                    <div className="stat-info">
-                        <AnimatedCounter
-                            end={totalTests}
-                            className="stat-number"
-                        />
-                        <span className="stat-label">Completed</span>
-                    </div>
-                </div>
-                <div
-                    className={`enhanced-stat-card clickable ${activeTab === 'missed' ? 'tab-active' : ''}`}
+                />
+                <MetricCard
+                    title="Missed"
+                    value={assessments.missed.length}
+                    icon={AlertCircleIcon}
+                    color="warning"
+                    active={activeTab === 'missed'}
                     onClick={() => { playClick(); setActiveTab('missed'); }}
-                >
-                    <div className="stat-icon-wrapper star"><AlertCircleIcon size={24} /></div>
-                    <div className="stat-info">
-                        <AnimatedCounter
-                            end={assessments.missed.length}
-                            className="stat-number"
-                        />
-                        <span className="stat-label">Missed Tests</span>
-                    </div>
-                </div>
+                />
             </div>
 
 
@@ -528,42 +508,48 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                                 </h2>
                                 <div className="assessment-grid">
                                     {assessments.live.map((test) => (
-                                        <div key={test.id} className="assessment-card live-card">
+                                        <div key={test.id} className="assessment-card">
                                             <div className="card-header">
                                                 <span className="subject-tag">{test.subject}</span>
-                                                <span className="live-badge">LIVE</span>
+                                                <span className="status-badge live">LIVE</span>
                                             </div>
                                             <h3>{test.title}</h3>
-                                            <p className="instructor">By {test.instructor}</p>
-                                            <p className="test-timing">
-                                                {test.isScheduled ? 'Scheduled:' : 'Posted:'} {test.date} at {test.startTime}
-                                            </p>
-                                            <p className="test-duration">Duration: {test.duration}</p>
+                                            <div className="test-meta">
+                                                <div className="meta-item">
+                                                    <ClockIcon size={14} />
+                                                    <span>{test.duration}</span>
+                                                </div>
+                                                <div className="meta-item">
+                                                    <BookIcon size={14} />
+                                                    <span>{test.questions} Questions</span>
+                                                </div>
+                                                <div className="meta-item">
+                                                    <AlertCircleIcon size={14} />
+                                                    <span>{test.difficulty}</span>
+                                                </div>
+                                            </div>
 
-                                            {/* Display expiry date if available */}
                                             {test.endDate && (
-                                                <p className="test-expiry" style={{
-                                                    color: '#ff6b6b',
-                                                    fontWeight: 'bold',
-                                                    fontSize: '0.9em',
-                                                    marginTop: '0.5rem',
-                                                    padding: '0.25rem 0.5rem',
-                                                    backgroundColor: '#ffe0e0',
-                                                    borderRadius: '4px',
-                                                    display: 'inline-block'
+                                                <div className="test-expiry" style={{
+                                                    color: 'var(--danger)',
+                                                    fontSize: '0.8rem',
+                                                    fontWeight: '600',
+                                                    background: '#fee2e2',
+                                                    padding: '4px 8px',
+                                                    borderRadius: '6px',
+                                                    display: 'inline-flex',
+                                                    alignItems: 'center',
+                                                    gap: '4px'
                                                 }}>
-                                                    ⏰ Expires: {new Date(test.endDate).toLocaleString([], {
-                                                        year: 'numeric', month: 'short', day: 'numeric',
-                                                        hour: '2-digit', minute: '2-digit'
-                                                    })}
-                                                </p>
+                                                    ⏰ Expires {new Date(test.endDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                </div>
                                             )}
 
                                             <button
                                                 className="btn-start"
                                                 onClick={() => handleStartTest(test)}
                                             >
-                                                Start Test →
+                                                Start Assessment
                                             </button>
                                         </div>
                                     ))}
