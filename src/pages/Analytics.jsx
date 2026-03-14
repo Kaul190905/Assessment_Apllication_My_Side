@@ -97,42 +97,42 @@ const Analytics = () => {
 
             <div className="analytics-content-grid" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
                 <div className="main-column">
-                    <div className="question-section" style={{ marginBottom: '24px' }}>
+                    <div className="question-section" style={{ marginBottom: '24px', backgroundColor: 'var(--card-bg)', borderRadius: 'var(--radius)', padding: '32px', border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)' }}>
                         <div className="card-header" style={{ marginBottom: '24px' }}>
-                            <h3 style={{ margin: 0 }}>Performance Trends</h3>
+                            <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '700', fontFamily: 'Inter', color: 'var(--text)' }}>Performance Trends</h3>
                         </div>
                         <PerformanceGraph data={stats.completed} />
                     </div>
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
-                        <div className="question-section">
+                        <div className="question-section" style={{ backgroundColor: 'var(--card-bg)', borderRadius: 'var(--radius)', padding: '24px', border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)' }}>
                             <div className="card-header" style={{ marginBottom: '16px' }}>
-                                <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Top Strengths</h3>
+                                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '700', fontFamily: 'Inter', color: 'var(--text)' }}>Top Strengths</h3>
                             </div>
-                            <div className="test-meta">
-                                <div className="meta-item">
-                                    <span style={{ color: 'var(--success)', fontWeight: 'bold' }}>• Mathematics</span>
-                                    <span> - 94% Avg</span>
+                            <div className="test-meta" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <div className="meta-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ color: 'var(--success)', fontWeight: '600' }}>Mathematics</span>
+                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>94% Avg</span>
                                 </div>
-                                <div className="meta-item">
-                                    <span style={{ color: 'var(--success)', fontWeight: 'bold' }}>• Physics</span>
-                                    <span> - 88% Avg</span>
+                                <div className="meta-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ color: 'var(--success)', fontWeight: '600' }}>Physics</span>
+                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>88% Avg</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="question-section">
+                        <div className="question-section" style={{ backgroundColor: 'var(--card-bg)', borderRadius: 'var(--radius)', padding: '24px', border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)' }}>
                             <div className="card-header" style={{ marginBottom: '16px' }}>
-                                <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Areas for Growth</h3>
+                                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '700', fontFamily: 'Inter', color: 'var(--text)' }}>Areas for Growth</h3>
                             </div>
-                            <div className="test-meta">
-                                <div className="meta-item">
-                                    <span style={{ color: 'var(--danger)', fontWeight: 'bold' }}>• Chemistry</span>
-                                    <span> - 62% Avg</span>
+                            <div className="test-meta" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                <div className="meta-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ color: 'var(--danger)', fontWeight: '600' }}>Chemistry</span>
+                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>62% Avg</span>
                                 </div>
-                                <div className="meta-item">
-                                    <span style={{ color: 'var(--warning)', fontWeight: 'bold' }}>• English</span>
-                                    <span> - 74% Avg</span>
+                                <div className="meta-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span style={{ color: 'var(--warning)', fontWeight: '600' }}>English</span>
+                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>74% Avg</span>
                                 </div>
                             </div>
                         </div>
@@ -140,25 +140,27 @@ const Analytics = () => {
                 </div>
 
                 <div className="side-column">
-                    <div className="question-section" style={{ height: '100%' }}>
+                    <div className="question-section" style={{ height: '100%', backgroundColor: 'var(--card-bg)', borderRadius: 'var(--radius)', padding: '24px', border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)' }}>
                         <div className="card-header" style={{ marginBottom: '20px' }}>
-                            <h3 style={{ margin: 0 }}>Recent Activity</h3>
+                            <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700', fontFamily: 'Inter', color: 'var(--text)' }}>Recent Activity</h3>
                         </div>
-                        <div className="activity-list" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div className="activity-list" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                             {stats.completed.length > 0 ? (
                                 stats.completed.slice(0, 5).map(test => (
-                                    <div key={test.testId} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                                        <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--primary)', marginTop: '6px' }}></div>
+                                    <div key={test.testId} style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                        <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--primary-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)' }}>
+                                            <CheckCircleIcon size={20} />
+                                        </div>
                                         <div>
                                             <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>{test.topic}</div>
-                                            <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                                                {new Date(test.createdAt).toLocaleDateString()}
+                                            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                                                {new Date(test.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                                             </div>
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>No recent activity to show</p>
+                                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', textAlign: 'center', padding: '40px 0' }}>No recent activity to show</p>
                             )}
                         </div>
                     </div>

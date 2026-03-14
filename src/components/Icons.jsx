@@ -20,7 +20,9 @@ import {
     AlertCircle,
     Clock,
     ChevronRight,
-    Search
+    Search,
+    Menu,
+    X
 } from 'lucide-react';
 
 // Icon components using Lucide React for a professional look
@@ -111,6 +113,14 @@ export const SearchIcon = ({ size = 24, color = 'currentColor' }) => (
     <Search size={size} color={color} strokeWidth={1.5} />
 );
 
+export const MenuIcon = ({ size = 24, color = 'currentColor' }) => (
+    <Menu size={size} color={color} strokeWidth={1.5} />
+);
+
+export const CloseIcon = ({ size = 24, color = 'currentColor' }) => (
+    <X size={size} color={color} strokeWidth={1.5} />
+);
+
 const icons = {
     BookIcon,
     TargetIcon,
@@ -132,7 +142,9 @@ const icons = {
     AlertCircleIcon,
     ClockIcon,
     ChevronRightIcon,
-    SearchIcon
+    SearchIcon,
+    MenuIcon,
+    CloseIcon
 };
 
 export default icons;

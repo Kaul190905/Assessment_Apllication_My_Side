@@ -8,7 +8,7 @@ import FloatingActionButton from '../components/FloatingActionButton';
 import { DashboardSkeleton } from '../components/Skeleton';
 import { useToast } from '../components/Toast';
 import useSound from '../hooks/useSound';
-import { BookIcon, TargetIcon, CheckCircleIcon, AlertCircleIcon, ClockIcon } from '../components/Icons';
+import { BookIcon, TargetIcon, CheckCircleIcon, AlertCircleIcon, ClockIcon, CalendarIcon } from '../components/Icons';
 import { testService } from '../services/testService';
 import MetricCard from '../components/MetricCard';
 
@@ -509,45 +509,39 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                                 <div className="assessment-grid">
                                     {assessments.live.map((test) => (
                                         <div key={test.id} className="assessment-card">
-                                            <div className="card-header">
-                                                <span className="subject-tag">{test.subject}</span>
-                                                <span className="status-badge live">LIVE</span>
+                                            <div className="card-badge-container">
+                                                <span className="badge badge--subject">{test.subject}</span>
+                                                <span className="badge badge--status badge--live">LIVE</span>
                                             </div>
-                                            <h3>{test.title}</h3>
-                                            <div className="test-meta">
+
+                                            <h3 className="card-title">{test.title}</h3>
+
+                                            <div className="card-meta">
                                                 <div className="meta-item">
                                                     <ClockIcon size={14} />
                                                     <span>{test.duration}</span>
                                                 </div>
                                                 <div className="meta-item">
                                                     <BookIcon size={14} />
-                                                    <span>{test.questions} Questions</span>
+                                                    <span>{test.questions} Qs</span>
                                                 </div>
                                                 <div className="meta-item">
-                                                    <AlertCircleIcon size={14} />
+                                                    <TargetIcon size={14} />
                                                     <span>{test.difficulty}</span>
                                                 </div>
                                             </div>
 
                                             {test.endDate && (
-                                                <div className="test-expiry" style={{
-                                                    color: 'var(--danger)',
-                                                    fontSize: '0.8rem',
-                                                    fontWeight: '600',
-                                                    background: '#fee2e2',
-                                                    padding: '4px 8px',
-                                                    borderRadius: '6px',
-                                                    display: 'inline-flex',
-                                                    alignItems: 'center',
-                                                    gap: '4px'
-                                                }}>
-                                                    ⏰ Expires {new Date(test.endDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                <div className="expiry-notice expiry-notice--urgent">
+                                                    <ClockIcon size={14} />
+                                                    <span>Expires {new Date(test.endDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                                 </div>
                                             )}
 
                                             <button
                                                 className="btn-start"
                                                 onClick={() => handleStartTest(test)}
+                                                style={{ width: '100%' }}
                                             >
                                                 Start Assessment
                                             </button>
@@ -590,41 +584,32 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                             </h2>
                             <div className="assessment-grid">
                                 {assessments.upcoming.map((test) => (
-                                    <div key={test.id} className="assessment-card upcoming-card">
-                                        <div className="card-header">
-                                            <span className="subject-tag">{test.subject}</span>
-                                            <span className="upcoming-badge" style={{ backgroundColor: '#FFC107', color: '#000' }}>UPCOMING</span>
+                                    <div key={test.id} className="assessment-card">
+                                        <div className="card-badge-container">
+                                            <span className="badge badge--subject">{test.subject}</span>
+                                            <span className="badge badge--status badge--upcoming">UPCOMING</span>
                                         </div>
-                                        <h3>{test.title}</h3>
-                                        <p className="instructor">By {test.instructor}</p>
-                                        <p className="test-timing">Scheduled: {test.date} at {test.startTime}</p>
-                                        <p className="test-duration">Duration: {test.duration}</p>
 
-                                        {/* Display expiry date if available */}
-                                        {test.endDate && (
-                                            <p className="test-expiry" style={{
-                                                color: '#ff6b6b',
-                                                fontWeight: 'bold',
-                                                fontSize: '0.9em',
-                                                marginTop: '0.5rem',
-                                                padding: '0.25rem 0.5rem',
-                                                backgroundColor: '#ffe0e0',
-                                                borderRadius: '4px',
-                                                display: 'inline-block'
-                                            }}>
-                                                ⏰ Expires: {new Date(test.endDate).toLocaleString([], {
-                                                    year: 'numeric', month: 'short', day: 'numeric',
-                                                    hour: '2-digit', minute: '2-digit'
-                                                })}
-                                            </p>
-                                        )}
+                                        <h3 className="card-title">{test.title}</h3>
+                                        <p className="card-instructor">By {test.instructor}</p>
+
+                                        <div className="expiry-notice expiry-notice--upcoming">
+                                            <CalendarIcon size={14} />
+                                            <span>{test.date} at {test.startTime}</span>
+                                        </div>
+
+                                        <div className="card-meta">
+                                            <div className="meta-item">
+                                                <ClockIcon size={14} />
+                                                <span>{test.duration}</span>
+                                            </div>
+                                        </div>
 
                                         <button
-                                            className="btn-start disabled"
+                                            className="btn-upcoming"
                                             disabled
-                                            style={{ opacity: 0.7, cursor: 'not-allowed', backgroundColor: '#6c757d', border: 'none' }}
                                         >
-                                            Starts {test.startTime}
+                                            Available at {test.startTime}
                                         </button>
                                     </div>
                                 ))}
@@ -669,33 +654,24 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                                     </div>
                                     <div className="assessment-grid">
                                         {groupedMissed[expandedMissed].map((test) => (
-                                            <div key={test.id} className="assessment-card missed-card">
-                                                <div className="card-header">
-                                                    <span className="subject-tag">{test.subject}</span>
-                                                    <span className="status-badge missed">
+                                            <div key={test.id} className="assessment-card">
+                                                <div className="card-badge-container">
+                                                    <span className="badge badge--subject">{test.subject}</span>
+                                                    <span className="badge badge--status">
                                                         {test.status === 'expired' ? 'EXPIRED' : 'MISSED'}
                                                     </span>
                                                 </div>
-                                                <h3>{test.title}</h3>
-                                                <p className="instructor">By {test.instructor}</p>
-                                                <p className="scheduled-date">Was scheduled: {test.date}</p>
-                                                <p className="test-timing missed-timing">
-                                                    Was available: {test.startTime} - {test.endTime}
-                                                </p>
-                                                <p className="test-duration">Duration: {test.duration}</p>
-                                                {test.endDate && (
-                                                    <p className="test-expiry" style={{
-                                                        color: '#ff6b6b',
-                                                        fontWeight: 'bold',
-                                                        fontSize: '0.85em',
-                                                        marginTop: '0.5rem'
-                                                    }}>
-                                                        ⏰ Expired: {new Date(test.endDate).toLocaleString([], {
-                                                            year: 'numeric', month: 'short', day: 'numeric',
-                                                            hour: '2-digit', minute: '2-digit'
-                                                        })}
-                                                    </p>
-                                                )}
+                                                <h3 className="card-title">{test.title}</h3>
+                                                <p className="card-instructor">By {test.instructor}</p>
+
+                                                <div className="expiry-notice expiry-notice--urgent" style={{ marginTop: 'auto' }}>
+                                                    <AlertCircleIcon size={14} />
+                                                    <span>Was scheduled for {test.date}</span>
+                                                </div>
+
+                                                <button className="btn-start disabled" disabled style={{ width: '100%', opacity: 0.5 }}>
+                                                    Not Available
+                                                </button>
                                             </div>
                                         ))}
                                     </div>
@@ -723,11 +699,13 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                                         {Object.entries(groupedCompleted).map(([subject, tests]) => (
                                             <div
                                                 key={subject}
-                                                className={`topic - box completed ${expandedCompleted === subject ? 'active' : ''} `}
+                                                className={`topic-box ${expandedCompleted === subject ? 'active' : ''}`}
                                                 onClick={() => toggleCompleted(subject)}
                                             >
-                                                <span className="topic-name">{subject}</span>
-                                                <span className="topic-count">{tests.length}</span>
+                                                <div className="topic-header">
+                                                    <span className="topic-name">{subject}</span>
+                                                    <span className="topic-count">{tests.length} tests</span>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -739,26 +717,23 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                                                 <h3>{expandedCompleted}</h3>
                                                 <button className="btn-close" onClick={() => setExpandedCompleted(null)}>✕</button>
                                             </div>
-                                            <div className="completed-list">
+                                            <div className="assessment-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                                                 {groupedCompleted[expandedCompleted].map((test) => (
-                                                    <div key={test.id} className="completed-card">
-                                                        <div className="completed-info">
-                                                            <div className="completed-header">
-                                                                <h4>{test.title}</h4>
-                                                                <span className="status-badge completed">Completed</span>
-                                                            </div>
-                                                            <p className="completed-meta">
-                                                                {test.instructor} • {test.date}
-                                                            </p>
+                                                    <div key={test.id} className="assessment-card">
+                                                        <div className="card-badge-container">
+                                                            <span className="badge badge--subject">{test.subject}</span>
+                                                            <span className="badge badge--status badge--completed">COMPLETED</span>
                                                         </div>
-                                                        <div className="completed-actions">
-                                                            <button
-                                                                className="btn-view-summary"
-                                                                onClick={(e) => handleViewFeedback(test, e)}
-                                                            >
-                                                                View Summary
-                                                            </button>
-                                                        </div>
+                                                        <h4 className="card-title" style={{ fontSize: '1rem' }}>{test.title}</h4>
+                                                        <p className="card-instructor">{test.instructor} • {test.date}</p>
+
+                                                        <button
+                                                            className="btn-view-summary"
+                                                            onClick={(e) => handleViewFeedback(test, e)}
+                                                            style={{ marginTop: 'auto', width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid var(--primary)', color: 'var(--primary)', background: 'transparent', fontWeight: '600', cursor: 'pointer' }}
+                                                        >
+                                                            View Summary
+                                                        </button>
                                                     </div>
                                                 ))}
                                             </div>

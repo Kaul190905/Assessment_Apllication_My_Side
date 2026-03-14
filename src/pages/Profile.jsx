@@ -170,10 +170,7 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
         batch: "2022-2026"
     };
 
-    const totalTests = assessments.completed.length;
-    const avgScore = totalTests > 0
-        ? Math.round(assessments.completed.reduce((acc, test) => acc + (test.percentage || 0), 0) / totalTests)
-        : 0;
+    // Calculate strongest subject (field with highest average score)
 
     // Calculate strongest subject (field with highest average score)
     const getStrongestSubject = () => {
@@ -223,9 +220,9 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
                         className="profile-avatar-large"
                     />
                     <div className="profile-name-section">
-                        <h2>{studentInfo.name}</h2>
+                        <h2 style={{ fontFamily: 'Inter', fontWeight: '700' }}>{studentInfo.name}</h2>
                         <p className="profile-email">{studentInfo.email}</p>
-                        <span className="profile-badge">{studentInfo.department}</span>
+                        <span className="profile-badge" style={{ backgroundColor: 'var(--primary)', color: 'white' }}>{studentInfo.department}</span>
                     </div>
                 </div>
 
@@ -246,44 +243,55 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
             </section>
 
             {/* Assessment Overview with Animated Stats */}
-            <section className="overview-section">
-                <h2 className="section-title">Assessment Overview</h2>
-                <div className="stats-grid">
-                    <div className="stat-card-large">
-                        <span className="stat-icon"><BookIcon size={24} /></span>
+            <section className="overview-section" style={{ marginBottom: '32px' }}>
+                <h2 className="section-title" style={{ fontSize: '1.25rem', fontWeight: '700', marginBottom: '20px', fontFamily: 'Inter', color: 'var(--text)' }}>Assessment Overview</h2>
+                <div className="stats-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+                    <div className="stat-card-large" style={{ backgroundColor: 'var(--card-bg)', borderRadius: '16px', padding: '24px', display: 'flex', alignItems: 'center', gap: '16px', border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <BookIcon size={24} />
+                        </div>
                         <div className="stat-content">
                             <AnimatedCounter
                                 end={assessments.upcoming.length}
                                 className="stat-number"
+                                style={{ fontSize: '1.5rem', fontWeight: '700' }}
                             />
-                            <span className="stat-label">Upcoming Tests</span>
+                            <span className="stat-label" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Upcoming</span>
                         </div>
                     </div>
-                    <div className="stat-card-large live">
-                        <span className="stat-icon"><TargetIcon size={24} /></span>
+                    <div className="stat-card-large" style={{ backgroundColor: 'var(--card-bg)', borderRadius: '16px', padding: '24px', display: 'flex', alignItems: 'center', gap: '16px', border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#fef2f2', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <TargetIcon size={24} />
+                        </div>
                         <div className="stat-content">
                             <AnimatedCounter
                                 end={assessments.live.length}
                                 className="stat-number"
+                                style={{ fontSize: '1.5rem', fontWeight: '700' }}
                             />
-                            <span className="stat-label">Live Now</span>
+                            <span className="stat-label" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Live Now</span>
                         </div>
                     </div>
-                    <div className="stat-card-large">
-                        <span className="stat-icon"><CheckCircleIcon size={24} /></span>
+                    <div className="stat-card-large" style={{ backgroundColor: 'var(--card-bg)', borderRadius: '16px', padding: '24px', display: 'flex', alignItems: 'center', gap: '16px', border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: '#f0fdf4', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <CheckCircleIcon size={24} />
+                        </div>
                         <div className="stat-content">
                             <AnimatedCounter
                                 end={assessments.completed.length}
                                 className="stat-number"
+                                style={{ fontSize: '1.5rem', fontWeight: '700' }}
                             />
-                            <span className="stat-label">Completed</span>
+                            <span className="stat-label" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Completed</span>
                         </div>
                     </div>
-                    <div className="stat-card-large strongest">
-                        <span className="stat-icon star"><StarIcon size={24} /></span>
-                        <div className="stat-content">
-                            <span className="stat-subject-name">{strongestSubject.name}</span>
-                            <span className="stat-label">Strongest Field</span>
+                    <div className="stat-card-large" style={{ backgroundColor: 'var(--card-bg)', borderRadius: '16px', padding: '24px', display: 'flex', alignItems: 'center', gap: '16px', border: '1px solid var(--border)', boxShadow: 'var(--card-shadow)' }}>
+                        <div style={{ width: '48px', height: '48px', borderRadius: '12px', background: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <StarIcon size={24} />
+                        </div>
+                        <div className="stat-content" style={{ overflow: 'hidden' }}>
+                            <span className="stat-subject-name" style={{ fontSize: '1rem', fontWeight: '700', whiteSpace: 'nowrap', textOverflow: 'ellipsis', display: 'block', overflow: 'hidden' }}>{strongestSubject.name}</span>
+                            <span className="stat-label" style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Best Field</span>
                         </div>
                     </div>
                 </div>

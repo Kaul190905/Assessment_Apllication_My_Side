@@ -1,66 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap');
+
 /* ============================================
    SIMPLE THEME SYSTEM - Light & Dark Mode
    ============================================ */
 
-/* Light Theme (Default) */
+/* /* Light Theme (Default) */
 :root {
-    /* Core Colors - Modern Minimal SaaS Purple Theme */
-    --primary: #6366f1;
-    --primary-light: #818cf8;
-    --primary-dark: #4f46e5;
-    --accent-color: #8b5cf6;
-    --success: #10b981;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    --mark-review: #f97316;
-    --mark-review-hover: #ea580c;
+    /* Core Colors - Modern Professional SaaS Indigo Theme */
+    --primary: #4F46E5;
+    --primary-light: #EEF2FF;
+    --primary-dark: #4338CA;
+    --accent-color: #6366F1;
+    --success: #10B981;
+    --danger: #EF4444;
+    --warning: #F59E0B;
+    --mark-review: #F97316;
+    --mark-review-hover: #EA580C;
 
     /* Background & Surface */
-    --bg: #f8fafc;
-    /* Slate 50 */
-    --bg-gradient-start: #f8fafc;
-    --bg-gradient-end: #f1f5f9;
-    /* Slate 100 */
-    --card-bg: #ffffff;
+    --bg-main: #F8FAFC;
+    --bg-gradient-start: #F8FAFC;
+    --bg-gradient-end: #F8FAFC;
+    --card-bg: #FFFFFF;
     --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
     --card-shadow-hover: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
-    --soft-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --soft-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
 
     /* Text */
-    --text: #0f172a;
-    /* Slate 900 */
-    --text-secondary: #64748b;
-    /* Slate 500 */
-    --text-muted: #94a3b8;
-    /* Slate 400 */
+    --text: #111827;
+    --text-black: #000000;
+    --text-secondary: #6B7280;
+    --text-muted: #94A3B8;
 
     /* Borders */
-    --border: #e2e8f0;
-    /* Slate 200 */
-    --border-light: #f1f5f9;
-    /* Slate 100 */
-    --radius: 0.75rem;
+    --border: #E5E7EB;
+    --border-light: #F1F5F9;
+    --radius: 12px;
+    --radius-lg: 16px;
 
-    /* Question Palette Colors */
-    --palette-current: #e0e7ff;
-    --palette-answered: #d1fae5;
-    --palette-marked: #ffedd5;
-    --palette-not-answered: #fee2e2;
-    --palette-not-visited: #f1f5f9;
-
-    /* Option Card */
-    --option-bg: #ffffff;
-    --option-selected-bg: #eef2ff;
-    --option-hover-bg: #f8fafc;
+    /* Sidebar - Light (Default) */
+    --sidebar-bg: #FFFFFF;
+    --sidebar-text: #64748B;
+    --sidebar-text-active: #4F46E5;
+    --sidebar-active-bg: #EEF2FF;
+    --sidebar-item-hover: #F8FAFC;
+    --sidebar-border: #E2E8F0;
+    --sidebar-width: 260px;
+    --sidebar-collapsed-width: 80px;
 
     /* Button Colors */
-    --btn-primary: #6366f1;
-    --btn-secondary: #64748b;
+    --btn-primary: #4F46E5;
+    --btn-secondary: #EEF2FF;
+
+    /* Theme adaptive badges & notices */
+    --badge-subject-bg: #EEF2FF;
+    --badge-subject-text: #4F46E5;
+    --badge-upcoming-bg: #FFFBEB;
+    --badge-upcoming-text: #D97706;
+    --badge-live-bg: #FEF2F2;
+    --badge-live-text: #EF4444;
+    --badge-completed-bg: #ECFDF5;
+    --badge-completed-text: #059669;
+    --notice-upcoming-bg: #EFF6FF;
+    --notice-upcoming-text: #2563EB;
+    --notice-urgent-bg: #FEF2F2;
+    --notice-urgent-text: #EF4444;
 }
 
 /* Dark Theme */
 [data-theme="dark"] {
-    --primary: #818cf8;
+    --primary: #6C4CF1;
     --primary-light: #a5b4fc;
     --primary-dark: #6366f1;
     --accent-color: #a78bdb;
@@ -71,7 +80,8 @@
     --mark-review-hover: #f97316;
 
     /* Background & Surface */
-    --bg: #0f172a;
+    --bg-main: #0f172a;
+    /* Renamed from --bg */
     --bg-gradient-start: #1e293b;
     --bg-gradient-end: #0f172a;
     --card-bg: #1e293b;
@@ -80,6 +90,8 @@
 
     /* Text */
     --text: #f8fafc;
+    --text-black: #ffffff;
+    /* New */
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
 
@@ -102,6 +114,28 @@
     /* Button Colors */
     --btn-primary: #818cf8;
     --btn-secondary: #94a3b8;
+
+    /* Sidebar - Dark Mode */
+    --sidebar-bg: #1E293B;
+    --sidebar-text: #94A3B8;
+    --sidebar-text-active: #FFFFFF;
+    --sidebar-active-bg: #334155;
+    --sidebar-item-hover: #2D3748;
+    --sidebar-border: #334155;
+
+    /* Theme adaptive badges & notices for Dark Mode */
+    --badge-subject-bg: rgba(99, 102, 241, 0.2);
+    --badge-subject-text: #818CF8;
+    --badge-upcoming-bg: rgba(245, 158, 11, 0.2);
+    --badge-upcoming-text: #FBBF24;
+    --badge-live-bg: rgba(239, 68, 68, 0.2);
+    --badge-live-text: #F87171;
+    --badge-completed-bg: rgba(16, 185, 129, 0.2);
+    --badge-completed-text: #34D399;
+    --notice-upcoming-bg: rgba(59, 130, 246, 0.2);
+    --notice-upcoming-text: #60A5FA;
+    --notice-urgent-bg: rgba(239, 68, 68, 0.2);
+    --notice-urgent-text: #F87171;
 }
 
 /* ============================================
@@ -114,8 +148,8 @@
 
 body {
     margin: 0;
-    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
-    background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+    font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg-main);
     color: var(--text);
     min-height: 100vh;
     transition: background 0.3s ease, color 0.3s ease;
@@ -128,29 +162,45 @@ body {
 .app-layout {
     display: flex;
     min-height: 100vh;
-    background: var(--bg);
+    background: var(--bg-main);
+}
+
+.app-layout.sidebar-collapsed .app-main {
+    margin-left: var(--sidebar-collapsed-width);
 }
 
 .app-sidebar {
-    width: 260px;
+    width: var(--sidebar-width);
     background: var(--card-bg);
     border-right: 1px solid var(--border);
     display: flex;
     flex-direction: column;
     padding: 24px 16px;
-    position: sticky;
-    top: 0;
     height: 100vh;
-    z-index: 1000;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 100;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.app-sidebar.collapsed {
+    width: var(--sidebar-collapsed-width);
+    padding: 24px 0;
 }
 
 .sidebar-logo {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 0 12px;
+    padding: 0 8px;
     margin-bottom: 32px;
+    transition: all 0.3s;
+}
+
+.app-sidebar.collapsed .sidebar-logo {
+    padding: 0;
+    justify-content: center;
+    width: 100%;
 }
 
 .sidebar-nav {
@@ -175,15 +225,30 @@ body {
 }
 
 .nav-item:hover {
-    background: var(--border-light);
-    color: var(--primary);
+    background: var(--sidebar-item-hover);
+    color: var(--sidebar-text-active);
     transform: translateX(4px);
 }
 
+.nav-item.collapsed:hover {
+    transform: none;
+}
+
 .nav-item.active {
-    background: var(--primary);
-    color: white;
-    box-shadow: var(--soft-shadow);
+    background: var(--sidebar-active-bg);
+    color: var(--sidebar-text-active);
+    font-weight: 600;
+    box-shadow: none;
+}
+
+.nav-item.active span {
+    color: var(--sidebar-text-active);
+}
+
+.nav-item.collapsed {
+    justify-content: center;
+    padding: 12px 0;
+    gap: 0;
 }
 
 .nav-item svg {
@@ -212,6 +277,136 @@ body {
     padding: 12px;
     border-radius: var(--radius);
     transition: all 0.2s ease;
+}
+
+.user-profile-section:hover {
+    background: var(--sidebar-item-hover);
+}
+
+/* ============================================
+   ASSESSMENT CARDS & COMPONENTS
+   ============================================ */
+
+.assessment-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+.assessment-card:hover {
+    box-shadow: var(--card-shadow-hover);
+    transform: translateY(-4px);
+    border-color: var(--primary-light);
+}
+
+.card-badge-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+/* Minimal Badge System */
+.badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.badge--subject {
+    background-color: var(--badge-subject-bg);
+    color: var(--badge-subject-text);
+}
+
+.badge--status {
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.badge--live {
+    background-color: var(--badge-live-bg);
+    color: var(--badge-live-text);
+}
+
+.badge--upcoming {
+    background-color: var(--badge-upcoming-bg);
+    color: var(--badge-upcoming-text);
+}
+
+.badge--completed {
+    background-color: var(--badge-completed-bg);
+    color: var(--badge-completed-text);
+}
+
+/* Card Typography */
+.card-title {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.card-instructor {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 16px;
+}
+
+/* Metadata Row */
+.card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 24px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Expiry & timing */
+.expiry-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background-color: var(--bg-main);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+.expiry-notice--urgent {
+    background-color: var(--notice-urgent-bg);
+    color: var(--notice-urgent-text);
+}
+
+.expiry-notice--upcoming {
+    background-color: var(--notice-upcoming-bg);
+    color: var(--notice-upcoming-text);
+}
+
+.user-profile-section.collapsed {
+    justify-content: center;
+    padding: 12px 0;
 }
 
 .user-avatar {
@@ -256,9 +451,11 @@ body {
 
 .app-main {
     flex: 1;
+    margin-left: var(--sidebar-width);
     display: flex;
     flex-direction: column;
     overflow-x: hidden;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .app-header {
@@ -409,6 +606,8 @@ body {
     flex: 1;
     margin: 0;
     padding: 0;
+    background: transparent;
+    box-shadow: none;
 }
 
 button.btn-submit.btn-submit-small {
@@ -580,8 +779,14 @@ button.btn-submit.btn-submit-small {
    QUESTION SECTION
    ============================================ */
 
+.main-content {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+}
+
 .question-section {
-    flex: 3;
+    flex: 1;
     background: var(--card-bg);
     border-radius: var(--radius);
     padding: 32px;
@@ -673,38 +878,31 @@ button.btn-submit.btn-submit-small {
     transform: translateY(-2px);
 }
 
-.btn-prev,
-.btn-next {
-    background: var(--btn-primary);
+.btn-next,
+.btn-submit-final {
+    background: var(--primary);
     color: white;
+}
+
+.btn-next:hover,
+.btn-submit-final:hover {
+    background: var(--primary-dark);
+}
+
+.btn-prev,
+.btn-mark,
+.btn-clear {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border) !important;
 }
 
 .btn-prev:hover,
-.btn-next:hover {
-    opacity: 0.9;
-}
-
-.btn-mark {
-    background: var(--mark-review);
-    color: white;
-}
-
-.btn-mark:hover {
-    background: var(--mark-review-hover);
-}
-
-.btn-clear {
-    background: var(--btn-secondary);
-    color: white;
-}
-
-.btn-submit-final {
-    background: var(--danger);
-    color: white;
-}
-
-.btn-submit-final:hover {
-    background: #dc2626;
+.btn-mark:hover,
+.btn-clear:hover {
+    background: var(--border-light);
+    color: var(--text);
+    border-color: var(--text-muted) !important;
 }
 
 /* ============================================
@@ -712,7 +910,8 @@ button.btn-submit.btn-submit-small {
    ============================================ */
 
 .sidebar {
-    flex: 1;
+    width: 350px;
+    flex-shrink: 0;
     background: var(--card-bg);
     border-radius: 16px;
     padding: 24px;
@@ -1171,8 +1370,8 @@ button.btn-submit.btn-submit-small {
 
 .btn-back-to-test {
     padding: 14px 28px;
-    background: var(--btn-secondary);
-    color: white;
+    background: var(--badge-subject-bg);
+    color: var(--badge-subject-text);
     border: none;
     border-radius: 12px;
     font-size: 1rem;
@@ -1574,10 +1773,10 @@ button.btn-submit.btn-submit-small {
 .btn-start {
     width: 100%;
     padding: 14px;
-    background: linear-gradient(135deg, #ef4444, #dc2626);
+    background: var(--primary);
     color: white;
     border: none;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
@@ -1586,19 +1785,20 @@ button.btn-submit.btn-submit-small {
 
 .btn-start:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    box-shadow: 0 4px 12px rgba(108, 76, 241, 0.4);
 }
 
 .btn-upcoming {
     width: 100%;
     padding: 12px;
-    background: var(--border-light);
-    color: var(--text-secondary);
+    background: var(--notice-upcoming-bg);
+    color: var(--notice-upcoming-text);
     border: none;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    font-weight: 500;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    font-weight: 600;
     cursor: not-allowed;
+    transition: all 0.2s ease;
 }
 
 /* Completed Assessments */
@@ -1627,11 +1827,90 @@ button.btn-submit.btn-submit-small {
     flex: 1;
 }
 
+/* Topic Boxes Grid */
+.topic-boxes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 20px;
+    margin-bottom: 32px;
+}
+
+.topic-box {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.topic-box:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--soft-shadow);
+    border-color: var(--primary-light);
+}
+
+.topic-box.active {
+    border-color: var(--primary);
+    box-shadow: var(--soft-shadow);
+    background: linear-gradient(to bottom right, var(--card-bg), var(--primary-light-alpha));
+}
+
+.topic-header {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.topic-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+}
+
+.topic-count {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.topic-box.active .topic-name {
+    color: var(--primary);
+}
+
+.expanded-content {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    margin-top: 16px;
+    box-shadow: var(--soft-shadow);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
 .completed-header {
     display: flex;
     align-items: center;
     gap: 12px;
-    margin-bottom: 4px;
+    margin-bottom: 16px;
 }
 
 .completed-header h4 {
@@ -1808,9 +2087,10 @@ button.btn-submit.btn-submit-small {
 .profile-avatar-large {
     width: 100px;
     height: 100px;
-    border-radius: 50%;
-    border: 4px solid var(--primary);
+    border-radius: 20px;
+    border: 4px solid var(--primary-light);
     box-shadow: 0 4px 16px var(--card-shadow);
+    object-fit: cover;
 }
 
 .profile-name-section h2 {
@@ -2035,8 +2315,8 @@ button.btn-submit.btn-submit-small {
 
 .btn-logout {
     padding: 14px 32px;
-    background: var(--danger);
-    color: white;
+    background: #fee2e2;
+    color: var(--danger);
     border: none;
     border-radius: 12px;
     font-size: 1rem;
@@ -2046,7 +2326,7 @@ button.btn-submit.btn-submit-small {
 }
 
 .btn-logout:hover {
-    opacity: 0.9;
+    background: #fecaca;
     transform: translateY(-2px);
 }
 
@@ -2208,7 +2488,7 @@ button.btn-submit.btn-submit-small {
 .topic-box {
     background: var(--card-bg);
     border-radius: 16px;
-    padding: 24px 16px;
+    padding: 40px 16px 24px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2264,14 +2544,15 @@ button.btn-submit.btn-submit-small {
     right: 8px;
     background: var(--primary);
     color: white;
-    width: 24px;
+    padding: 4px 10px;
     height: 24px;
-    border-radius: 50%;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 0.75rem;
     font-weight: 700;
+    white-space: nowrap;
 }
 
 .topic-box.completed .topic-count {
@@ -5928,4 +6209,30 @@ button.btn-submit.btn-submit-small {
 
 .test-card-simple:hover {
     border-color: var(--primary-light);
+}
+
+.fullscreen-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.75);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.fullscreen-content {
+    background: var(--card-bg);
+    padding: 40px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--border);
 }
