@@ -2,13 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import AnimatedCounter from '../components/AnimatedCounter';
 import AccentColorPicker from '../components/AccentColorPicker';
 import { ProfileSkeleton } from '../components/Skeleton';
-import { useToast } from '../components/Toast';
 import useSound from '../hooks/useSound';
 import { BookIcon, TargetIcon, CheckCircleIcon, StarIcon, CameraIcon } from '../components/Icons';
 import { testService } from '../services/testService';
 
 const Profile = ({ isDark, onThemeToggle, onLogout }) => {
-    const toast = useToast();
     const { playClick, playSuccess, isEnabled, setEnabled } = useSound();
 
     // Loading state
@@ -146,9 +144,6 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
         setEnabled(newValue);
         if (newValue) {
             playSuccess();
-            toast.success('Sound effects enabled');
-        } else {
-            toast.info('Sound effects disabled');
         }
     };
 
@@ -158,14 +153,12 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
         localStorage.setItem('glassmorphism', newValue.toString());
         document.documentElement.setAttribute('data-glass', newValue ? 'true' : 'false');
         playClick();
-        toast.success(newValue ? 'Glassmorphism enabled' : 'Glassmorphism disabled');
     };
 
     const handleProfilePicUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
             if (file.size > 2 * 1024 * 1024) {
-                toast.error('Image size should be less than 2MB');
                 return;
             }
 
@@ -186,7 +179,6 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
                 localStorage.setItem('userData', JSON.stringify(userData));
                 
                 playSuccess();
-                toast.success('Profile picture updated successfully');
             };
             reader.readAsDataURL(file);
         }

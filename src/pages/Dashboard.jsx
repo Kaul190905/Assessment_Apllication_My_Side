@@ -6,7 +6,6 @@ import CalendarView from '../components/CalendarView';
 import ActivityFeed from '../components/ActivityFeed';
 import FloatingActionButton from '../components/FloatingActionButton';
 import { DashboardSkeleton } from '../components/Skeleton';
-import { useToast } from '../components/Toast';
 import useSound from '../hooks/useSound';
 import { BookIcon, TargetIcon, CheckCircleIcon, AlertCircleIcon, ClockIcon, CalendarIcon, SparklesIcon, TrendingUpIcon, ZapIcon, CloseIcon } from '../components/Icons';
 import { testService } from '../services/testService';
@@ -14,7 +13,6 @@ import MetricCard from '../components/MetricCard';
 
 const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
     const navigate = useNavigate();
-    const toast = useToast();
     const { playClick, playSuccess } = useSound();
 
     // Loading state for skeleton
@@ -291,9 +289,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
     }, [fetchPublishedTests]);
 
     const handleStartTest = (test) => {
-        // Prevent re-taking completed tests
         if (assessments.completed.some(t => t.id === test.id)) {
-            toast.error('You have already completed this test.');
             return;
         }
 
@@ -302,7 +298,6 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
             const now = new Date();
             const expirationDate = new Date(test.endDate);
             if (expirationDate <= now) {
-                toast.error('This test has expired and is no longer accessible.');
                 return;
             }
         }

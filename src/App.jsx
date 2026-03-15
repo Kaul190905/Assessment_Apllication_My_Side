@@ -5,7 +5,6 @@ import Dashboard from './pages/Dashboard';
 import TestPage from './pages/TestPage';
 import Profile from './pages/Profile';
 import RulesPage from './pages/RulesPage';
-import { ToastProvider } from './components/Toast';
 import { ThemeProvider } from './components/ThemeProvider';
 import Layout from './components/Layout';
 import Analytics from './pages/Analytics';
@@ -94,7 +93,6 @@ function App() {
   };
 
   return (
-    <ToastProvider>
       <ThemeProvider onThemeChange={setIsDarkTheme}>
         <Router>
           <div className="exam-container">
@@ -211,7 +209,6 @@ function App() {
           </div>
         </Router>
       </ThemeProvider>
-    </ToastProvider>
   );
 }
 

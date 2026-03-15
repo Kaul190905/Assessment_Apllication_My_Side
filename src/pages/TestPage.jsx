@@ -10,14 +10,12 @@ import SummaryLegend from '../components/SummaryLegend';
 import SubmitButton from '../components/SubmitButton';
 import useTestTimer from '../hooks/useTestTimer';
 import useSound from '../hooks/useSound';
-import { useToast } from '../components/Toast';
 import { questions } from '../data/questions';
 import { formatTime } from '../utils/formatTime';
 import { testService } from '../services/testService';
 
 const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
     const navigate = useNavigate();
-    const toast = useToast();
     const { playClick, playSelect, playSuccess, playWarning } = useSound();
 
     // Use questions from currentTest if available, ensuring it's an array
@@ -71,7 +69,6 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
             const studentId = userData.email || userData.id || userData.rollNumber;
 
             if (!studentId) {
-                toast.error('Student session not found. Please login again.');
                 return;
             }
 
@@ -109,7 +106,6 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
             setShowSuccess(true);
             setSubmitted(true);
 
-            toast.success('Test submitted successfully!');
 
             // Call onCompleteTest if provided
             if (onCompleteTest) {
@@ -126,9 +122,6 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
 
         } catch (err) {
             console.error('Failed to handle submission:', err);
-            toast.error('Submission encountered an error, but your progress was saved.');
-
-            // Local fallback removed per user request
 
             playSuccess();
             setShowSuccess(true);
@@ -138,7 +131,7 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
                 navigate('/');
             }, 3000);
         }
-    }, [answers, currentTest, navigate, onCompleteTest, playSuccess, testQuestions, timeLeft, toast, totalTime]);
+    }, [answers, currentTest, navigate, onCompleteTest, playSuccess, testQuestions, timeLeft, totalTime]);
 
     // Auto-submit handler (called when timer expires)
     const handleAutoSubmit = React.useCallback(async () => {
@@ -169,21 +162,17 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
         if (timeLeft <= 300 && timeLeft > 60 && !warned5Min.current) {
             warned5Min.current = true;
             playWarning();
-            toast.warning('5 minutes remaining!', 'Time Warning');
             setTimerPulse(true);
         }
 
         if (timeLeft <= 60 && !warned1Min.current) {
             warned1Min.current = true;
             playWarning();
-            toast.error('1 minute remaining!', 'Time Critical');
             setTimerPulse(true);
         }
 
-        // Auto-submit when time expires
         if (timeLeft <= 0 && !hasAutoSubmitted.current && !submitted) {
             hasAutoSubmitted.current = true;
-            toast.error('Time is up! Auto-submitting test...', 'Time Expired');
             handleAutoSubmit();
         }
 
@@ -192,7 +181,7 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
             const timer = setTimeout(() => setTimerPulse(false), 2000);
             return () => clearTimeout(timer);
         }
-    }, [timeLeft, playWarning, toast, timerPulse, submitted, handleAutoSubmit]);
+    }, [timeLeft, playWarning, timerPulse, submitted, handleAutoSubmit]);
 
     useEffect(() => {
         const newVisited = [...visited];
@@ -212,7 +201,6 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
         const newAnswers = [...answers];
         newAnswers[currentQuestion] = null;
         setAnswers(newAnswers);
-        toast.info('Answer cleared');
     };
 
     const handleMark = () => {
@@ -221,7 +209,6 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
         const wasMarked = newMarked[currentQuestion];
         newMarked[currentQuestion] = !wasMarked;
         setMarked(newMarked);
-        toast.info(wasMarked ? 'Removed from review' : 'Marked for review');
     };
 
     // Calculate statistics
