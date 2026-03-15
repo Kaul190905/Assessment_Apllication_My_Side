@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckIcon, PlayIcon, StarIcon, CalendarIcon, TrophyIcon, InboxIcon } from './Icons';
+import { CheckIcon, PlayIcon, CalendarIcon, TrophyIcon, InboxIcon } from './Icons';
 
 const ActivityFeed = ({ activities }) => {
     // Get relative time string
@@ -23,8 +23,6 @@ const ActivityFeed = ({ activities }) => {
                 return <CheckIcon size={18} color="white" />;
             case 'test_started':
                 return <PlayIcon size={18} color="white" />;
-            case 'score_received':
-                return <StarIcon size={18} color="white" />;
             case 'test_scheduled':
             case 'announcement':
                 return <CalendarIcon size={18} color="white" />;
@@ -42,8 +40,6 @@ const ActivityFeed = ({ activities }) => {
                 return 'var(--success)';
             case 'test_started':
                 return 'var(--primary)';
-            case 'score_received':
-                return 'var(--warning)';
             case 'test_scheduled':
             case 'announcement':
                 return 'var(--primary)';

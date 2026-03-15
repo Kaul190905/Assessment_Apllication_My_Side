@@ -268,7 +268,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
         } finally {
             setIsLoading(false);
         }
-    }, [toast]);
+    }, []);
 
     // Fetch published tests from backend (initial load with loading state)
     useEffect(() => {
@@ -377,7 +377,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
             return {
                 grade: 'Needs Improvement',
                 gradeClass: 'low',
-                message: 'This score indicates areas that need significant attention.',
+                message: 'This assessment indicates areas that need significant attention.',
                 tips: [
                     'Schedule a meeting with your instructor for guidance',
                     'Focus on understanding the basics before moving forward',
@@ -405,12 +405,11 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
         // Sort by rawDate to likely find the most relevant one, or ideally by attempt date if available
         // Using rawDate (test schedule) as a proxy for now
         const lastAttended = [...assessments.completed].sort((a, b) => b.rawDate - a.rawDate)[0];
-        const gradeInfo = getRecommendations(lastAttended);
 
         activities.push({
             type: 'test_completed',
             title: `Last Attended: ${lastAttended.title} `,
-            description: `Score: ${Math.round(lastAttended.percentage)}% • Grade: ${gradeInfo.grade} `,
+            description: `Completed on ${lastAttended.date} `,
             timestamp: lastAttended.date,
             id: 'last-attended'
         });
@@ -767,14 +766,11 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                         <div className="summary-header">
                             <h2>Assessment Complete</h2>
                             <p className="summary-title">{selectedTest.title}</p>
-                            <span className={`summary - grade ${getRecommendations(selectedTest).gradeClass} `}>
-                                {getRecommendations(selectedTest).grade}
-                            </span>
                         </div>
 
                         {/* One-line Feedback */}
                         <div className="summary-feedback">
-                            <p>{getRecommendations(selectedTest).message}</p>
+                            <p>You have successfully completed this assessment.</p>
                         </div>
 
                         {/* Recommendations */}

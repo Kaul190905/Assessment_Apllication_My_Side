@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { StarIcon, ChevronLeftIcon, ChevronRightIcon, CloseIcon, ClockIcon, TimerIcon, ChartIcon } from './Icons';
+import { StarIcon, ChevronLeftIcon, ChevronRightIcon, CloseIcon, ClockIcon, TimerIcon } from './Icons';
 import '../styles/calendar-tooltip.css';
 
 const CalendarView = ({ events = [], onEventClick }) => {
@@ -213,8 +213,7 @@ const CalendarView = ({ events = [], onEventClick }) => {
                                             </p>
                                             {event.percentage !== undefined && (
                                                 <p className="popup-score">
-                                                    <span className="detail-icon"><ChartIcon size={16} /></span>
-                                                    Score: {Math.round(event.percentage)}%
+                                                    Completed
                                                 </p>
                                             )}
                                         </div>

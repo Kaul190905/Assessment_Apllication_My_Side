@@ -384,7 +384,7 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
                     <div className="success-content">
                         <div className="success-icon"></div>
                         <h2>Test Submitted Successfully!</h2>
-                        <p>You answered <strong>{answeredCount}</strong> out of <strong>{testQuestions.length}</strong> questions.</p>
+                        <p>You have successfully submitted your assessment.</p>
                         <p className="redirect-text">Redirecting to Dashboard...</p>
                         <div className="loading-spinner"></div>
                     </div>

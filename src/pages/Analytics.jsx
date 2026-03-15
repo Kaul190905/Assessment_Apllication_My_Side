@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import PerformanceGraph from '../components/PerformanceGraph';
-import { BookIcon, TargetIcon, CheckCircleIcon, ChartIcon } from '../components/Icons';
+import { BookIcon, TargetIcon, CheckCircleIcon } from '../components/Icons';
 import { testService } from '../services/testService';
 import { DashboardSkeleton } from '../components/Skeleton';
 import MetricCard from '../components/MetricCard';
@@ -91,12 +91,6 @@ const Analytics = () => {
                     value={stats.live.length}
                     icon={TargetIcon}
                     color="danger"
-                />
-                <MetricCard
-                    title="Average Score"
-                    value={stats.completed.length > 0 ? Math.round(stats.completed.reduce((acc, curr) => acc + (curr.percentage || 0), 0) / stats.completed.length) : 0}
-                    icon={ChartIcon}
-                    color="warning"
                 />
             </div>
 
