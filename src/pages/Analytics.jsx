@@ -24,7 +24,12 @@ const Analytics = () => {
                 try {
                     const allAttempts = await testService.getMyAttempts();
                     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-                    const studentIdentifier = userData.email || 'STU2025001';
+                    const studentIdentifier = userData.email || userData.id;
+
+                    if (!studentIdentifier) {
+                        console.warn('Analytics: No student identifier found');
+                        return;
+                    }
 
                     myAttempts = allAttempts.filter(a => {
                         const sId = (typeof a.studentId === 'object' && a.studentId !== null)
@@ -89,7 +94,7 @@ const Analytics = () => {
                 />
                 <MetricCard
                     title="Average Score"
-                    value={stats.completed.length > 0 ? 82 : 0} // Mock average score or calculate if possible
+                    value={stats.completed.length > 0 ? Math.round(stats.completed.reduce((acc, curr) => acc + (curr.percentage || 0), 0) / stats.completed.length) : 0}
                     icon={ChartIcon}
                     color="warning"
                 />
@@ -110,14 +115,7 @@ const Analytics = () => {
                                 <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '700', fontFamily: 'Inter', color: 'var(--text)' }}>Top Strengths</h3>
                             </div>
                             <div className="test-meta" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                <div className="meta-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ color: 'var(--success)', fontWeight: '600' }}>Mathematics</span>
-                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>94% Avg</span>
-                                </div>
-                                <div className="meta-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ color: 'var(--success)', fontWeight: '600' }}>Physics</span>
-                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>88% Avg</span>
-                                </div>
+                                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Data will appear as you complete assessments.</p>
                             </div>
                         </div>
 
@@ -126,14 +124,7 @@ const Analytics = () => {
                                 <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '700', fontFamily: 'Inter', color: 'var(--text)' }}>Areas for Growth</h3>
                             </div>
                             <div className="test-meta" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                                <div className="meta-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ color: 'var(--danger)', fontWeight: '600' }}>Chemistry</span>
-                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>62% Avg</span>
-                                </div>
-                                <div className="meta-item" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ color: 'var(--warning)', fontWeight: '600' }}>English</span>
-                                    <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>74% Avg</span>
-                                </div>
+                                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>Data will appear as you complete assessments.</p>
                             </div>
                         </div>
                     </div>

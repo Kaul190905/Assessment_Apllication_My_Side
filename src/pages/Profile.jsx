@@ -67,7 +67,12 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
                 try {
                     const allAttempts = await testService.getMyAttempts();
                     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-                    const studentIdentifier = userData.email || 'STU2025001';
+                    const studentIdentifier = userData.email || userData.id;
+
+                    if (!studentIdentifier) {
+                        console.warn('No student identifier found in Profile');
+                        return;
+                    }
 
                     myAttempts = allAttempts.filter(a => {
                         const sId = (typeof a.studentId === 'object' && a.studentId !== null)
@@ -79,22 +84,7 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
                     console.warn('API attempts fetch failed in Profile:', apiErr.message);
                 }
 
-                // Merge with local attempts
-                const localAttempts = JSON.parse(localStorage.getItem('localAttempts') || '[]');
-                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-                const studentIdentifier = userData.email || 'STU2025001';
-
-                localAttempts.forEach(local => {
-                    const exists = myAttempts.some(a => {
-                        const tId = (typeof a.testId === 'object' && a.testId !== null)
-                            ? (a.testId.testId || a.testId._id || a.testId.id)
-                            : a.testId;
-                        return tId === local.testId;
-                    });
-                    if (!exists && local.studentId === studentIdentifier) {
-                        myAttempts.push(local);
-                    }
-                });
+// Local fallback removed per user request
 
                 // Create a set of completed test IDs
                 const completedTestIds = new Set(myAttempts.map(a => {
@@ -209,12 +199,12 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
     const studentInfo = (() => {
         const userData = JSON.parse(localStorage.getItem('userData') || '{}');
         return {
-            name: userData.name || "John Doe",
-            email: userData.email || "john.doe@university.edu",
-            rollNumber: userData.email || "STU2025001",
-            department: userData.department || "Computer Science",
-            semester: userData.semester || "6th Semester",
-            batch: userData.batch || "2022-2026"
+            name: userData.name || "Student",
+            email: userData.email || "",
+            rollNumber: userData.rollNumber || userData.id || "",
+            department: userData.department || "N/A",
+            semester: userData.semester || "N/A",
+            batch: userData.batch || "N/A"
         };
     })();
 

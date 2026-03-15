@@ -45,8 +45,124 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [submitted, setSubmitted] = useState(false);
-    const [isSubmitting, setIsSubmitting] = useState(false);
     const hasAutoSubmitted = useRef(false);
+
+    // Navigation with sound
+    const handlePrev = () => {
+        playClick();
+        setCurrentQuestion(Math.max(0, currentQuestion - 1));
+    };
+
+    const handleNext = () => {
+        playClick();
+        setCurrentQuestion(Math.min(testQuestions.length - 1, currentQuestion + 1));
+    };
+
+    const handleJump = (index) => {
+        playClick();
+        setCurrentQuestion(index);
+    };
+
+    // Submit test to backend
+    const submitTest = React.useCallback(async () => {
+        try {
+            // Get user data from localStorage (profile data)
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            const studentId = userData.email || userData.id || userData.rollNumber;
+
+            if (!studentId) {
+                toast.error('Student session not found. Please login again.');
+                return;
+            }
+
+            // Format answers for backend (Array of objects with option text)
+            const formattedAnswers = answers.map((ansIdx, qIdx) => {
+                const question = testQuestions[qIdx];
+                return ansIdx !== null ? {
+                    questionId: question.id,
+                    selected: question.options[ansIdx]
+                } : null;
+            }).filter(a => a !== null);
+
+            // Calculate time taken
+            const timeTaken = totalTime - timeLeft;
+
+            // Prepare attempt data
+            const attemptData = {
+                studentId: studentId,
+                testId: currentTest?.id,
+                answers: formattedAnswers,
+                timeTaken: timeTaken,
+            };
+
+            // Submit to backend
+            let result = {};
+            try {
+                result = await testService.submitAttempt(attemptData);
+            } catch (apiErr) {
+                console.warn('API submission failed, using local fallback:', apiErr.message);
+            }
+
+            // Local storage fallback removed per user request
+
+            playSuccess();
+            setShowSuccess(true);
+            setSubmitted(true);
+
+            toast.success('Test submitted successfully!');
+
+            // Call onCompleteTest if provided
+            if (onCompleteTest) {
+                const answeredCount = answers.filter(a => a !== null).length;
+                const totalMarks = currentTest?.marks || testQuestions.length * 2;
+                const calculatedScore = result.score || Math.min(answeredCount * 2, totalMarks);
+                onCompleteTest(calculatedScore, totalMarks);
+            }
+
+            // Redirect to dashboard after 3 seconds
+            setTimeout(() => {
+                navigate('/');
+            }, 3000);
+
+        } catch (err) {
+            console.error('Failed to handle submission:', err);
+            toast.error('Submission encountered an error, but your progress was saved.');
+
+            // Local fallback removed per user request
+
+            playSuccess();
+            setShowSuccess(true);
+            setSubmitted(true);
+
+            setTimeout(() => {
+                navigate('/');
+            }, 3000);
+        }
+    }, [answers, currentTest, navigate, onCompleteTest, playSuccess, testQuestions, timeLeft, toast, totalTime]);
+
+    // Auto-submit handler (called when timer expires)
+    const handleAutoSubmit = React.useCallback(async () => {
+        playWarning();
+        await submitTest();
+    }, [playWarning, submitTest]);
+
+    // Step 1: Show fullscreen confirmation with question palette
+    const handleSubmitClick = () => {
+        playClick();
+        setShowConfirmation(true);
+    };
+
+    // Step 2: User confirms and submit directly
+    const handleConfirmSubmit = async () => {
+        playClick();
+        setShowConfirmation(false);
+        await submitTest();
+    };
+
+    const handleCancelConfirmation = () => {
+        playClick();
+        setShowConfirmation(false);
+    };
 
     // Timer warnings and auto-submit
     useEffect(() => {
@@ -76,13 +192,13 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
             const timer = setTimeout(() => setTimerPulse(false), 2000);
             return () => clearTimeout(timer);
         }
-    }, [timeLeft, playWarning, toast, timerPulse, submitted]);
+    }, [timeLeft, playWarning, toast, timerPulse, submitted, handleAutoSubmit]);
 
     useEffect(() => {
         const newVisited = [...visited];
         newVisited[currentQuestion] = true;
         setVisited(newVisited);
-    }, [currentQuestion]);
+    }, [currentQuestion, visited]);
 
     const handleAnswer = (index) => {
         playSelect();
@@ -106,147 +222,6 @@ const TestPage = ({ isDark, onThemeToggle, currentTest, onCompleteTest }) => {
         newMarked[currentQuestion] = !wasMarked;
         setMarked(newMarked);
         toast.info(wasMarked ? 'Removed from review' : 'Marked for review');
-    };
-
-    // Navigation with sound
-    const handlePrev = () => {
-        playClick();
-        setCurrentQuestion(Math.max(0, currentQuestion - 1));
-    };
-
-    const handleNext = () => {
-        playClick();
-        setCurrentQuestion(Math.min(testQuestions.length - 1, currentQuestion + 1));
-    };
-
-    const handleJump = (index) => {
-        playClick();
-        setCurrentQuestion(index);
-    };
-
-    // Submit test to backend
-    const submitTest = async () => {
-        setIsSubmitting(true);
-
-        try {
-            // Get user data from localStorage (profile data)
-            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-            const studentId = userData.email || userData.id || userData.rollNumber || 'STU2025001';
-            const studentName = userData.name || 'Student';
-
-            // Format answers for backend (Array of objects with option text)
-            const formattedAnswers = answers.map((ansIdx, qIdx) => {
-                const question = testQuestions[qIdx];
-                return ansIdx !== null ? {
-                    questionId: question.id,
-                    selected: question.options[ansIdx]
-                } : null;
-            }).filter(a => a !== null);
-
-            // Calculate time taken
-            const timeTaken = totalTime - timeLeft;
-
-            // Prepare attempt data
-            const attemptData = {
-                studentId: studentId,
-                testId: currentTest?.id || 'demo-test',
-                answers: formattedAnswers,
-                timeTaken: timeTaken,
-            };
-
-            // Submit to backend
-            let result = {};
-            try {
-                result = await testService.submitAttempt(attemptData);
-            } catch (apiErr) {
-                console.warn('API submission failed, using local fallback:', apiErr.message);
-            }
-
-            // Save to local storage for persistence (especially useful in demo/unauthenticated mode)
-            const localAttempts = JSON.parse(localStorage.getItem('localAttempts') || '[]');
-            localAttempts.push({
-                testId: currentTest?.id,
-                studentId: studentId,
-                studentName: studentName,
-                score: result.score || 0,
-                date: new Date().toISOString(),
-                percentage: result.score ? (result.score / (currentTest?.marks || 1) * 100) : (answers.filter(a => a !== null).length * 2 / (currentTest?.marks || 1) * 100)
-            });
-            localStorage.setItem('localAttempts', JSON.stringify(localAttempts));
-
-            playSuccess();
-            setShowSuccess(true);
-            setSubmitted(true);
-
-            toast.success('Test submitted successfully!');
-
-            // Call onCompleteTest if provided
-            if (onCompleteTest) {
-                const answeredCount = answers.filter(a => a !== null).length;
-                const totalMarks = currentTest?.marks || testQuestions.length * 2;
-                const calculatedScore = result.score || Math.min(answeredCount * 2, totalMarks);
-                onCompleteTest(calculatedScore, totalMarks);
-            }
-
-            // Redirect to dashboard after 3 seconds
-            setTimeout(() => {
-                navigate('/');
-            }, 3000);
-
-        } catch (err) {
-            console.error('Failed to handle submission:', err);
-            toast.error('Submission encountered an error, but your progress was saved.');
-            setIsSubmitting(false);
-
-            // Local fallback even on major error
-            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-            const studentId = userData.email || userData.id || userData.rollNumber || 'STU2025001';
-            const studentName = userData.name || 'Student';
-
-            const localAttempts = JSON.parse(localStorage.getItem('localAttempts') || '[]');
-            if (!localAttempts.some(a => a.testId === currentTest?.id)) {
-                localAttempts.push({
-                    testId: currentTest?.id,
-                    studentId: studentId,
-                    studentName: studentName,
-                    date: new Date().toISOString(),
-                    percentage: (answers.filter(a => a !== null).length * 2 / (currentTest?.marks || 1) * 100)
-                });
-                localStorage.setItem('localAttempts', JSON.stringify(localAttempts));
-            }
-
-            playSuccess();
-            setShowSuccess(true);
-            setSubmitted(true);
-
-            setTimeout(() => {
-                navigate('/');
-            }, 3000);
-        }
-    };
-
-    // Step 1: Show fullscreen confirmation with question palette
-    const handleSubmitClick = () => {
-        playClick();
-        setShowConfirmation(true);
-    };
-
-    // Step 2: User confirms and submit directly
-    const handleConfirmSubmit = async () => {
-        playClick();
-        setShowConfirmation(false);
-        await submitTest();
-    };
-
-    // Auto-submit handler (called when timer expires)
-    const handleAutoSubmit = async () => {
-        playWarning();
-        await submitTest();
-    };
-
-    const handleCancelConfirmation = () => {
-        playClick();
-        setShowConfirmation(false);
     };
 
     // Calculate statistics

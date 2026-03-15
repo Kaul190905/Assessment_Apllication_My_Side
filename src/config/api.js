@@ -1,4 +1,3 @@
-import { MOCK_TESTS, MOCK_ATTEMPTS, MOCK_USER } from './mockData';
 
 // API base URL - points to your GradeFlow backend
 export const API_BASE_URL = (() => {
@@ -58,24 +57,8 @@ export const apiCall = async (endpoint, options = {}) => {
     
     return await response.json();
   } catch (error) {
-    console.warn(`API call failed for ${endpoint}:`, error.message);
-    console.info('Falling back to dummy data...');
-
-    // Return dummy data based on the endpoint
-    if (endpoint.includes(API_ENDPOINTS.GET_PUBLISHED_TESTS)) {
-      return MOCK_TESTS;
-    }
-    if (endpoint.includes(API_ENDPOINTS.GET_ATTEMPTS)) {
-      return MOCK_ATTEMPTS;
-    }
-    if (endpoint.includes(API_ENDPOINTS.PROFILE)) {
-      return MOCK_USER;
-    }
-    if (endpoint.includes(API_ENDPOINTS.LOGIN)) {
-      return { token: 'mock-token', user: MOCK_USER };
-    }
-
-    // Rethrow if no mock data available
+    console.error(`API call failed for ${endpoint}:`, error.message);
+    // Rethrow error instead of falling back to mock data
     throw error;
   }
 };

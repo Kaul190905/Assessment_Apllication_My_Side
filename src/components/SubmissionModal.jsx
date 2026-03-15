@@ -16,7 +16,7 @@ const SubmissionModal = ({ open, onClose, onSubmit, rollInput, setRollInput, err
             // Clear error when typing
             if (error) setRollInput(e.target.value); // trigger re-render if needed
           }}
-          placeholder="e.g. STU2025001"
+          placeholder="Enter your Roll Number"
           autoFocus
         />
         {error && (

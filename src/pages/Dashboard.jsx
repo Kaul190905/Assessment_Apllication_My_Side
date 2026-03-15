@@ -132,7 +132,12 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                 const allAttempts = await testService.getMyAttempts();
                 // Get current student identifier (matches logic in TestPage)
                 const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-                const studentIdentifier = userData.email || 'STU2025001';
+                const studentIdentifier = userData.email || userData.id;
+
+                if (!studentIdentifier) {
+                    console.warn('No student identifier found, cannot filter attempts');
+                    return;
+                }
 
                 // Filter attempts for this student
                 myAttempts = allAttempts.filter(a => {
@@ -145,24 +150,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                 console.warn('Could not fetch attempts from backend:', err.message);
             }
 
-            // 2. Merge with local attempts (fallback for demo mode)
-            const localAttempts = JSON.parse(localStorage.getItem('localAttempts') || '[]');
-            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-            const studentIdentifier = userData.email || 'STU2025001';
-
-            localAttempts.forEach(local => {
-                // If this test isn't already in myAttempts, add it
-                const exists = myAttempts.some(a => {
-                    const tId = (typeof a.testId === 'object' && a.testId !== null)
-                        ? (a.testId.testId || a.testId._id || a.testId.id)
-                        : a.testId;
-                    return tId === local.testId;
-                });
-
-                if (!exists && local.studentId === studentIdentifier) {
-                    myAttempts.push(local);
-                }
-            });
+// Local fallback removed per user request
 
             // Create a set of completed test IDs for fast lookup
             const completedTestIds = new Set(myAttempts.map(a => {
@@ -263,12 +251,10 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
 
             // Only show toast notifications on initial load, not during auto-refresh
             if (showLoading) {
-                // Check if it's an authentication error
                 if (error.message.includes('Not authorized') || error.message.includes('token')) {
-                    console.log('Authentication required - using demo mode');
-                    toast.info('Using demo mode. Login with backend credentials to see published tests.');
+                    console.log('Authentication required');
                 } else {
-                    toast.error('Failed to load tests from backend');
+                    console.error('Failed to load tests from backend');
                 }
             }
 
@@ -322,7 +308,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
         }
 
         playSuccess();
-        toast.info(`Starting ${test.title}...`);
+        console.log(`Starting ${test.title}...`);
         onStartTest(test);
         navigate('/rules');
     };

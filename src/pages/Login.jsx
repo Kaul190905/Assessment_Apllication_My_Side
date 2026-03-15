@@ -15,8 +15,6 @@ const Login = ({ isDark, onThemeToggle, onLogin }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
-    // Demo credentials (kept for fallback)
-    const DEMO_CREDENTIALS = { id: 'STU2025001', password: 'student123' };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -45,20 +43,7 @@ const Login = ({ isDark, onThemeToggle, onLogin }) => {
             onLogin('student');
             navigate('/');
         } catch (err) {
-            // Fallback to demo credentials for development
-            if (formData.id === DEMO_CREDENTIALS.id && formData.password === DEMO_CREDENTIALS.password) {
-                // Store demo user data
-                const demoUser = {
-                    email: formData.id,
-                    name: 'Demo Student',
-                    role: 'student'
-                };
-                localStorage.setItem('userData', JSON.stringify(demoUser));
-                onLogin('student');
-                navigate('/');
-            } else {
-                setError(err.message || 'Invalid credentials. Please try again.');
-            }
+            setError(err.message || 'Invalid credentials. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -153,7 +138,7 @@ const Login = ({ isDark, onThemeToggle, onLogin }) => {
                             name="id"
                             value={formData.id}
                             onChange={handleInputChange}
-                            placeholder="e.g. STU2025001"
+                            placeholder="Enter your Roll Number"
                             required
                             autoFocus
                         />
@@ -216,11 +201,6 @@ const Login = ({ isDark, onThemeToggle, onLogin }) => {
                     />
                 </div>
 
-                {/* Demo Credentials */}
-                <div className="demo-credentials">
-                    <p>Demo Credentials:</p>
-                    <span>ID: <code>STU2025001</code> | Password: <code>student123</code></span>
-                </div>
             </div>
         </div>
     );
