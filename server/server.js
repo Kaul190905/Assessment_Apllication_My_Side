@@ -13,7 +13,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
+  origin: process.env.NODE_ENV === 'production' ? true : ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:5175'],
   credentials: true
 }));
 app.use(express.json());
@@ -39,10 +39,15 @@ app.get('/api', (req, res) => {
   });
 });
 
-// Start server
-const PORT = process.env.PORT || 5000;
+// Export app for Vercel
+module.exports = app;
 
-app.listen(PORT, () => {
-  console.log(`🚀 GradeFlow Backend running on port ${PORT}`);
-  console.log(`📡 API: http://localhost:${PORT}/api`);
-});
+// Start server only if not in production (Vercel handles this for serverless functions)
+if (process.env.NODE_ENV !== 'production') {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`🚀 GradeFlow Backend running on port ${PORT}`);
+    console.log(`📡 API: http://localhost:${PORT}/api`);
+  });
+}
+
