@@ -20,9 +20,17 @@ import {
     AlertCircle,
     Clock,
     ChevronRight,
+    ChevronLeft,
+    Timer,
     Search,
     Menu,
-    X
+    X,
+    Camera,
+    Sparkles,
+    TrendingUp,
+    Zap,
+    Info,
+    Plus
 } from 'lucide-react';
 
 // Icon components using Lucide React for a professional look
@@ -121,6 +129,38 @@ export const CloseIcon = ({ size = 24, color = 'currentColor' }) => (
     <X size={size} color={color} strokeWidth={1.5} />
 );
 
+export const CameraIcon = ({ size = 24, color = 'currentColor' }) => (
+    <Camera size={size} color={color} strokeWidth={1.5} />
+);
+ 
+export const SparklesIcon = ({ size = 24, color = 'currentColor' }) => (
+    <Sparkles size={size} color={color} strokeWidth={1.5} />
+);
+ 
+export const TrendingUpIcon = ({ size = 24, color = 'currentColor' }) => (
+    <TrendingUp size={size} color={color} strokeWidth={1.5} />
+);
+ 
+export const ZapIcon = ({ size = 24, color = 'currentColor' }) => (
+    <Zap size={size} color={color} strokeWidth={1.5} />
+);
+ 
+export const ChevronLeftIcon = ({ size = 24, color = 'currentColor' }) => (
+    <ChevronLeft size={size} color={color} strokeWidth={1.5} />
+);
+ 
+export const TimerIcon = ({ size = 24, color = 'currentColor' }) => (
+    <Timer size={size} color={color} strokeWidth={1.5} />
+);
+ 
+export const InfoIcon = ({ size = 24, color = 'currentColor' }) => (
+    <Info size={size} color={color} strokeWidth={1.5} />
+);
+ 
+export const PlusIcon = ({ size = 24, color = 'currentColor' }) => (
+    <Plus size={size} color={color} strokeWidth={1.5} />
+);
+
 const icons = {
     BookIcon,
     TargetIcon,
@@ -144,7 +184,15 @@ const icons = {
     ChevronRightIcon,
     SearchIcon,
     MenuIcon,
-    CloseIcon
+    CloseIcon,
+    CameraIcon,
+    SparklesIcon,
+    TrendingUpIcon,
+    ZapIcon,
+    ChevronLeftIcon,
+    TimerIcon,
+    InfoIcon,
+    PlusIcon
 };
 
 export default icons;

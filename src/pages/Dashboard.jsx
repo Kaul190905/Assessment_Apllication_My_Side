@@ -8,7 +8,7 @@ import FloatingActionButton from '../components/FloatingActionButton';
 import { DashboardSkeleton } from '../components/Skeleton';
 import { useToast } from '../components/Toast';
 import useSound from '../hooks/useSound';
-import { BookIcon, TargetIcon, CheckCircleIcon, AlertCircleIcon, ClockIcon, CalendarIcon } from '../components/Icons';
+import { BookIcon, TargetIcon, CheckCircleIcon, AlertCircleIcon, ClockIcon, CalendarIcon, SparklesIcon, TrendingUpIcon, ZapIcon, CloseIcon } from '../components/Icons';
 import { testService } from '../services/testService';
 import MetricCard from '../components/MetricCard';
 
@@ -650,7 +650,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                                 <div className="expanded-content missed-content">
                                     <div className="expanded-header">
                                         <h3>{expandedMissed}</h3>
-                                        <button className="btn-close" onClick={() => setExpandedMissed(null)}>✕</button>
+                                        <button className="btn-close" onClick={() => setExpandedMissed(null)}><CloseIcon size={20} /></button>
                                     </div>
                                     <div className="assessment-grid">
                                         {groupedMissed[expandedMissed].map((test) => (
@@ -715,7 +715,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
                                         <div className="expanded-content">
                                             <div className="expanded-header">
                                                 <h3>{expandedCompleted}</h3>
-                                                <button className="btn-close" onClick={() => setExpandedCompleted(null)}>✕</button>
+                                                <button className="btn-close" onClick={() => setExpandedCompleted(null)}><CloseIcon size={20} /></button>
                                             </div>
                                             <div className="assessment-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' }}>
                                                 {groupedCompleted[expandedCompleted].map((test) => (
@@ -769,15 +769,15 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
             {showFeedback && selectedTest && (
                 <div className="summary-modal" onClick={closeFeedback}>
                     <div className="summary-card" onClick={(e) => e.stopPropagation()}>
-                        <button className="btn-close-modal" onClick={closeFeedback}>✕</button>
+                        <button className="btn-close-modal" onClick={closeFeedback}><CloseIcon size={20} /></button>
 
                         {/* Illustration Area */}
                         <div className="summary-illustration">
                             <div className={`illustration - icon ${getRecommendations(selectedTest).gradeClass} `}>
-                                {getRecommendations(selectedTest).gradeClass === 'excellent' && '🎯'}
-                                {getRecommendations(selectedTest).gradeClass === 'good' && '✨'}
-                                {getRecommendations(selectedTest).gradeClass === 'average' && '📈'}
-                                {getRecommendations(selectedTest).gradeClass === 'low' && '💪'}
+                                {getRecommendations(selectedTest).gradeClass === 'excellent' && <TargetIcon size={48} />}
+                                {getRecommendations(selectedTest).gradeClass === 'good' && <SparklesIcon size={48} />}
+                                {getRecommendations(selectedTest).gradeClass === 'average' && <TrendingUpIcon size={48} />}
+                                {getRecommendations(selectedTest).gradeClass === 'low' && <ZapIcon size={48} />}
                             </div>
                         </div>
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { HomeIcon, UserIcon, ChartIcon, SettingsIcon, LogoutIcon } from './Icons';
+import { HomeIcon, UserIcon, ChartIcon, SettingsIcon, LogoutIcon, CloseIcon } from './Icons';
 
 const MobileSidebar = ({ isOpen, onClose, onLogout }) => {
     const navigate = useNavigate();
@@ -38,13 +38,25 @@ const MobileSidebar = ({ isOpen, onClose, onLogout }) => {
                         <img src="/logo.jpg" alt="Logo" className="sidebar-logo" />
                         <span>Gradeflow</span>
                     </div>
-                    <button className="sidebar-close" onClick={onClose}>×</button>
+                    <button className="sidebar-close" onClick={onClose}><CloseIcon size={24} /></button>
                 </div>
 
                 <div className="sidebar-user">
-                    <img src="https://via.placeholder.com/50" alt="User" className="sidebar-avatar" />
+                    {(() => {
+                        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                        const identifier = userData.email || userData.id;
+                        const savedPic = localStorage.getItem(`profilePic_${identifier}`) || userData.profilePic;
+                        return (
+                            <img 
+                                src={savedPic || "https://via.placeholder.com/50"} 
+                                alt="User" 
+                                className="sidebar-avatar" 
+                                style={{ objectFit: 'cover' }}
+                            />
+                        );
+                    })()}
                     <div className="sidebar-user-info">
-                        <span className="sidebar-username">John Doe</span>
+                        <span className="sidebar-username">{JSON.parse(localStorage.getItem('userData') || '{}').name || "John Doe"}</span>
                         <span className="sidebar-role">Student</span>
                     </div>
                 </div>

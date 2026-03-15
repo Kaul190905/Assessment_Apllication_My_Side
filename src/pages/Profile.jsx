@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import AnimatedCounter from '../components/AnimatedCounter';
 import AccentColorPicker from '../components/AccentColorPicker';
 import { ProfileSkeleton } from '../components/Skeleton';
 import { useToast } from '../components/Toast';
 import useSound from '../hooks/useSound';
-import { BookIcon, TargetIcon, CheckCircleIcon, StarIcon } from '../components/Icons';
+import { BookIcon, TargetIcon, CheckCircleIcon, StarIcon, CameraIcon } from '../components/Icons';
 import { testService } from '../services/testService';
 
 const Profile = ({ isDark, onThemeToggle, onLogout }) => {
@@ -27,6 +27,16 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
     const [glassmorphism, setGlassmorphism] = useState(() => {
         return localStorage.getItem('glassmorphism') === 'true';
     });
+    const [profilePic, setProfilePic] = useState(() => {
+        try {
+            const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+            const identifier = userData.email || userData.id || 'guest';
+            return localStorage.getItem(`profilePic_${identifier}`) || userData.profilePic || null;
+        } catch (e) {
+            return null;
+        }
+    });
+    const fileInputRef = useRef(null);
 
     useEffect(() => {
         fetchAssessmentData();
@@ -161,14 +171,52 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
         toast.success(newValue ? 'Glassmorphism enabled' : 'Glassmorphism disabled');
     };
 
-    const studentInfo = {
-        name: "John Doe",
-        email: "john.doe@university.edu",
-        rollNumber: "STU2025001",
-        department: "Computer Science",
-        semester: "6th Semester",
-        batch: "2022-2026"
+    const handleProfilePicUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            if (file.size > 2 * 1024 * 1024) {
+                toast.error('Image size should be less than 2MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result;
+                setProfilePic(base64String);
+                
+                // Update localStorage with persistence
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                const identifier = userData.email || userData.id;
+                
+                if (identifier) {
+                    localStorage.setItem(`profilePic_${identifier}`, base64String);
+                }
+                
+                userData.profilePic = base64String;
+                localStorage.setItem('userData', JSON.stringify(userData));
+                
+                playSuccess();
+                toast.success('Profile picture updated successfully');
+            };
+            reader.readAsDataURL(file);
+        }
     };
+
+    const triggerFileInput = () => {
+        fileInputRef.current.click();
+    };
+
+    const studentInfo = (() => {
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        return {
+            name: userData.name || "John Doe",
+            email: userData.email || "john.doe@university.edu",
+            rollNumber: userData.email || "STU2025001",
+            department: userData.department || "Computer Science",
+            semester: userData.semester || "6th Semester",
+            batch: userData.batch || "2022-2026"
+        };
+    })();
 
     // Calculate strongest subject (field with highest average score)
 
@@ -214,11 +262,23 @@ const Profile = ({ isDark, onThemeToggle, onLogout }) => {
             {/* Profile Card */}
             <section className="profile-card">
                 <div className="profile-avatar-section">
-                    <img
-                        src="https://via.placeholder.com/120"
-                        alt="Profile"
-                        className="profile-avatar-large"
-                    />
+                    <div className="avatar-upload-wrapper" onClick={triggerFileInput}>
+                        <img
+                            src={profilePic || "https://via.placeholder.com/120"}
+                            alt="Profile"
+                            className="profile-avatar-large"
+                        />
+                        <div className="avatar-upload-overlay">
+                            <CameraIcon size={24} color="white" />
+                        </div>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleProfilePicUpload}
+                            accept="image/*"
+                            className="hidden-input"
+                        />
+                    </div>
                     <div className="profile-name-section">
                         <h2 style={{ fontFamily: 'Inter', fontWeight: '700' }}>{studentInfo.name}</h2>
                         <p className="profile-email">{studentInfo.email}</p>

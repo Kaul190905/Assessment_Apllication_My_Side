@@ -8,7 +8,6 @@ import RulesPage from './pages/RulesPage';
 import { ToastProvider } from './components/Toast';
 import { ThemeProvider } from './components/ThemeProvider';
 import Layout from './components/Layout';
-import TestsList from './pages/TestsList';
 import Analytics from './pages/Analytics';
 // Assessments now fetched from backend via Dashboard component
 import './styles/global.css';
@@ -134,23 +133,6 @@ function App() {
                         onLogout={handleLogout}
                         onStartTest={handleStartTest}
                       />
-                    </Layout>
-                  ) : (
-                    <Navigate to="/login" replace />
-                  )
-                }
-              />
-              <Route
-                path="/tests"
-                element={
-                  isLoggedIn ? (
-                    <Layout
-                      isDark={isDarkTheme}
-                      onThemeToggle={handleThemeToggle}
-                      onLogout={handleLogout}
-                      title="All Tests"
-                    >
-                      <TestsList onStartTest={handleStartTest} />
                     </Layout>
                   ) : (
                     <Navigate to="/login" replace />

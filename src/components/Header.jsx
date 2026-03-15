@@ -64,8 +64,20 @@ const Header = ({
         {isExam ? (
           <>
             <div className="student-info" style={{ gap: '12px' }}>
-              <img src="https://via.placeholder.com/48" alt="Avatar" className="avatar" style={{ borderRadius: '10px' }} />
-              <span style={{ fontWeight: '500' }}>Welcome, John Doe</span>
+              {(() => {
+                const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+                const identifier = userData.email || userData.id;
+                const savedPic = localStorage.getItem(`profilePic_${identifier}`) || userData.profilePic;
+                return (
+                  <img 
+                    src={savedPic || "https://via.placeholder.com/48"} 
+                    alt="Avatar" 
+                    className="avatar" 
+                    style={{ borderRadius: '10px', objectFit: 'cover' }} 
+                  />
+                );
+              })()}
+              <span style={{ fontWeight: '500' }}>Welcome, {JSON.parse(localStorage.getItem('userData') || '{}').name || "John Doe"}</span>
             </div>
             <div className={`timer ${timerPulse ? 'pulse' : ''}`} style={{ background: 'var(--danger-light)', padding: '6px 12px', borderRadius: '8px' }}>
               <span className="time-display" style={{ fontSize: '1.1rem' }}>{formatTimeFn(timeLeft)}</span>

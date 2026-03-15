@@ -80,13 +80,19 @@ const Sidebar = ({ onLogout, isCollapsed }) => {
                     style={{ textDecoration: 'none', display: 'flex', justifyContent: isCollapsed ? 'center' : 'flex-start' }}
                     title={isCollapsed ? userName : ''}
                 >
-                    <div className="user-avatar" style={{ backgroundColor: 'var(--primary)', color: 'white', flexShrink: 0, fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {userInitials}
+                    <div className="user-avatar" style={{ backgroundColor: 'var(--primary)', color: 'white', flexShrink: 0, fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                        {(() => {
+                            const identifier = userData.email || userData.id;
+                            const savedPic = localStorage.getItem(`profilePic_${identifier}`) || userData.profilePic;
+                            return savedPic ? (
+                                <img src={savedPic} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : userInitials;
+                        })()}
                     </div>
                     {!isCollapsed && (
                         <div className="user-info" style={{ marginLeft: '12px' }}>
-                            <span className="user-name" style={{ color: 'var(--text)', fontWeight: '600' }}>{userName}</span>
-                            <span className="user-role" style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{userRole}</span>
+                            <span className="user-name" style={{ color: 'var(--text)', fontWeight: '600' }}>{userData.name || userName}</span>
+                            <span className="user-role" style={{ color: 'var(--text-secondary)', fontSize: '0.75rem' }}>{userData.role || userRole}</span>
                         </div>
                     )}
                 </NavLink>

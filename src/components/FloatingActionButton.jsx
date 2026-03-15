@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { HomeIcon, UserIcon, ClipboardIcon } from './Icons';
+import { HomeIcon, UserIcon, PlusIcon, CloseIcon } from './Icons';
 
 const FloatingActionButton = () => {
     const [isOpen, setIsOpen] = useState(false);
@@ -24,12 +24,6 @@ const FloatingActionButton = () => {
             label: 'Profile',
             path: '/profile',
             color: 'var(--success)'
-        },
-        {
-            icon: <ClipboardIcon size={20} />,
-            label: 'My Tests',
-            path: '/tests',
-            color: 'var(--warning)'
         }
     ];
 
@@ -70,7 +64,7 @@ const FloatingActionButton = () => {
                 aria-expanded={isOpen}
                 aria-label={isOpen ? 'Close menu' : 'Open quick actions'}
             >
-                <span className="fab-icon">{isOpen ? '×' : '+'}</span>
+                <span className="fab-icon">{isOpen ? <CloseIcon size={24} /> : <PlusIcon size={24} />}</span>
             </button>
 
             {/* Overlay */}

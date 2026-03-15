@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTheme } from './ThemeProvider';
+import { CheckIcon } from './Icons';
 
 const AccentColorPicker = () => {
     const { accentColor, setAccentColor, accentColors } = useTheme();
@@ -22,7 +23,7 @@ const AccentColorPicker = () => {
                             style={{ backgroundColor: color.primary }}
                         />
                         {accentColor === key && (
-                            <span className="color-check">✓</span>
+                            <span className="color-check"><CheckIcon size={14} /></span>
                         )}
                     </button>
                 ))}

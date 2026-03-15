@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { StarIcon, ChevronLeftIcon, ChevronRightIcon, CloseIcon, ClockIcon, TimerIcon, ChartIcon } from './Icons';
 import '../styles/calendar-tooltip.css';
 
 const CalendarView = ({ events = [], onEventClick }) => {
@@ -31,7 +32,6 @@ const CalendarView = ({ events = [], onEventClick }) => {
 
     // Check if a day has events
     const getEventsForDay = (day) => {
-        const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
         return events.filter(event => {
             // Use rawDate object if available (most reliable)
             if (event.rawDate instanceof Date) {
@@ -123,7 +123,7 @@ const CalendarView = ({ events = [], onEventClick }) => {
                     <>
                         {/* Important Symbol (Star) */}
                         <div className="event-important-symbol">
-                            <span style={{ fontSize: '10px' }}>★</span>
+                            <StarIcon size={12} fill="currentColor" />
                         </div>
                         
                         {/* Tooltip on Hover */}
@@ -145,9 +145,9 @@ const CalendarView = ({ events = [], onEventClick }) => {
     return (
         <div className="calendar-view">
             <div className="calendar-header">
-                <button className="calendar-nav" onClick={prevMonth}>‹</button>
+                <button className="calendar-nav" onClick={prevMonth}><ChevronLeftIcon size={20} /></button>
                 <h3>{months[month]} {year}</h3>
-                <button className="calendar-nav" onClick={nextMonth}>›</button>
+                <button className="calendar-nav" onClick={nextMonth}><ChevronRightIcon size={20} /></button>
             </div>
 
             <div className="calendar-weekdays">
@@ -166,7 +166,7 @@ const CalendarView = ({ events = [], onEventClick }) => {
                     <div className="calendar-popup-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="popup-header">
                             <h3>Assessments on {formatSelectedDate()}</h3>
-                            <button className="popup-close-btn" onClick={closePopup}>✕</button>
+                            <button className="popup-close-btn" onClick={closePopup}><CloseIcon size={20} /></button>
                         </div>
                         <div className="popup-content">
                             {selectedEvents.map((event, index) => {
@@ -204,16 +204,16 @@ const CalendarView = ({ events = [], onEventClick }) => {
                                         <p className="popup-instructor">By {event.instructor}</p>
                                         <div className="popup-details">
                                             <p className="popup-timing">
-                                                <span className="detail-icon">🕐</span>
+                                                <span className="detail-icon"><ClockIcon size={16} /></span>
                                                 {event.startTime} - {event.endTime}
                                             </p>
                                             <p className="popup-duration">
-                                                <span className="detail-icon">⏱️</span>
+                                                <span className="detail-icon"><TimerIcon size={16} /></span>
                                                 Duration: {event.duration}
                                             </p>
                                             {event.percentage !== undefined && (
                                                 <p className="popup-score">
-                                                    <span className="detail-icon">📊</span>
+                                                    <span className="detail-icon"><ChartIcon size={16} /></span>
                                                     Score: {Math.round(event.percentage)}%
                                                 </p>
                                             )}

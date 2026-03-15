@@ -39,7 +39,8 @@ const Login = ({ isDark, onThemeToggle, onLogin }) => {
 
             // Store token and user data
             localStorage.setItem('authToken', response.token);
-            localStorage.setItem('userData', JSON.stringify(response));
+            // Ensure we store only the user object in userData
+            localStorage.setItem('userData', JSON.stringify(response.user || response));
 
             onLogin('student');
             navigate('/');

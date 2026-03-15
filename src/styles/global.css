@@ -955,7 +955,7 @@ button.btn-submit.btn-submit-small {
     font-size: 0.9rem;
     color: var(--text);
     border: 2px solid var(--border);
-    background: var(--palette-not-visited);
+    background: transparent;
     cursor: pointer;
     transition: all 0.2s ease;
 }
@@ -966,27 +966,33 @@ button.btn-submit.btn-submit-small {
 }
 
 .palette-btn.current {
-    background: var(--palette-current);
+    background: transparent;
     border-color: var(--primary);
+    color: var(--primary);
 }
 
 .palette-btn.answered {
-    background: var(--palette-answered);
+    background: transparent;
     border-color: var(--success);
+    color: var(--success);
 }
 
 .palette-btn.marked {
-    background: var(--palette-marked);
+    background: transparent;
     border-color: var(--warning);
+    color: var(--warning);
 }
 
 .palette-btn.not-answered {
-    background: var(--palette-not-answered);
+    background: transparent;
     border-color: var(--danger);
+    color: var(--danger);
 }
 
 .palette-btn.not-visited {
-    background: var(--palette-not-visited);
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text-muted);
 }
 
 /* ============================================
@@ -1009,35 +1015,37 @@ button.btn-submit.btn-submit-small {
 }
 
 .dot {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    border-radius: 4px;
     border: 2px solid var(--border);
     flex-shrink: 0;
+    background: transparent;
 }
 
 .dot.current {
-    background: var(--palette-current);
     border-color: var(--primary);
 }
 
 .dot.answered {
-    background: var(--palette-answered);
     border-color: var(--success);
 }
 
 .dot.marked {
-    background: var(--palette-marked);
     border-color: var(--warning);
 }
 
 .dot.not-answered {
-    background: var(--palette-not-answered);
     border-color: var(--danger);
 }
 
 .dot.not-visited {
-    background: var(--palette-not-visited);
+    border-color: var(--border);
+}
+
+.dot.answered-marked {
+    border: 2px solid;
+    border-image: linear-gradient(135deg, var(--success), var(--warning)) 1;
 }
 
 /* ============================================
@@ -1224,6 +1232,7 @@ button.btn-submit.btn-submit-small {
     padding: 20px;
     text-align: center;
     box-shadow: 0 2px 12px var(--card-shadow);
+    border: 2px solid transparent;
 }
 
 .stat-item .stat-value {
@@ -1239,19 +1248,19 @@ button.btn-submit.btn-submit-small {
 }
 
 .stat-item.answered {
-    border-left: 4px solid var(--success);
+    border-color: var(--success);
 }
 
 .stat-item.marked {
-    border-left: 4px solid var(--warning);
+    border-color: var(--warning);
 }
 
 .stat-item.not-answered {
-    border-left: 4px solid var(--danger);
+    border-color: var(--danger);
 }
 
 .stat-item.not-visited {
-    border-left: 4px solid var(--border);
+    border-color: var(--border);
 }
 
 .confirmation-palette {
@@ -1294,31 +1303,33 @@ button.btn-submit.btn-submit-small {
 }
 
 .palette-item.answered {
-    background: var(--palette-answered);
-    color: var(--text);
+    background: transparent;
+    color: var(--success);
     border-color: var(--success);
 }
 
 .palette-item.marked {
-    background: var(--palette-marked);
-    color: var(--text);
+    background: transparent;
+    color: var(--warning);
     border-color: var(--warning);
 }
 
 .palette-item.answered-marked {
-    background: linear-gradient(135deg, var(--palette-answered), var(--palette-marked));
-    color: var(--text);
+    background: transparent;
+    border: 2px solid;
+    border-image: linear-gradient(135deg, var(--success), var(--warning)) 1;
+    color: var(--primary);
 }
 
 .palette-item.not-answered {
-    background: var(--palette-not-answered);
-    color: var(--text);
+    background: transparent;
+    color: var(--danger);
     border-color: var(--danger);
 }
 
 .palette-item.not-visited {
-    background: var(--palette-not-visited);
-    color: var(--text-secondary);
+    background: transparent;
+    color: var(--text-muted);
     border-color: var(--border);
 }
 
@@ -1339,27 +1350,27 @@ button.btn-submit.btn-submit-small {
 }
 
 .confirmation-legend .dot {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border-radius: 4px;
+    border: 2px solid var(--border);
+    background: transparent;
 }
 
 .confirmation-legend .dot.answered {
-    background: var(--success);
+    border-color: var(--success);
 }
 
 .confirmation-legend .dot.marked {
-    background: var(--warning);
+    border-color: var(--warning);
 }
 
 .confirmation-legend .dot.not-answered {
-    background: var(--palette-not-answered);
-    border: 1px solid var(--danger);
+    border-color: var(--danger);
 }
 
 .confirmation-legend .dot.not-visited {
-    background: var(--palette-not-visited);
-    border: 1px solid var(--border);
+    border-color: var(--border);
 }
 
 .confirmation-actions {
@@ -2091,6 +2102,41 @@ button.btn-submit.btn-submit-small {
     border: 4px solid var(--primary-light);
     box-shadow: 0 4px 16px var(--card-shadow);
     object-fit: cover;
+    transition: all 0.3s ease;
+}
+
+.avatar-upload-wrapper {
+    position: relative;
+    cursor: pointer;
+    border-radius: 20px;
+    overflow: hidden;
+    width: 100px;
+    height: 100px;
+}
+
+.avatar-upload-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    backdrop-filter: blur(2px);
+}
+
+.avatar-upload-wrapper:hover .avatar-upload-overlay {
+    opacity: 1;
+}
+
+.avatar-upload-wrapper:hover .profile-avatar-large {
+    transform: scale(1.05);
+}
+
+.hidden-input {
+    display: none;
 }
 
 .profile-name-section h2 {

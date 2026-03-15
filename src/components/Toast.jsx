@@ -1,14 +1,15 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
+import { CheckIcon, CloseIcon, AlertCircleIcon, InfoIcon } from './Icons';
 
 // Toast Context
 const ToastContext = createContext(null);
 
 // Toast types with icons
 const TOAST_ICONS = {
-    success: '✓',
-    error: '✕',
-    warning: '⚠',
-    info: 'ℹ'
+    success: <CheckIcon size={20} />,
+    error: <CloseIcon size={20} />,
+    warning: <AlertCircleIcon size={20} />,
+    info: <InfoIcon size={20} />
 };
 
 // Individual Toast Component
@@ -36,7 +37,7 @@ const ToastItem = ({ toast, onRemove }) => {
                 {toast.title && <div className="toast-title">{toast.title}</div>}
                 <div className="toast-message">{toast.message}</div>
             </div>
-            <button className="toast-close" onClick={handleClose}>×</button>
+            <button className="toast-close" onClick={handleClose}><CloseIcon size={18} /></button>
             <div className="toast-progress" style={{ animationDuration: `${toast.duration || 4000}ms` }} />
         </div>
     );
