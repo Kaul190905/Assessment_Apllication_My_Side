@@ -6,7 +6,8 @@ const connectDB = async () => {
     console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`❌ MongoDB Connection Error: ${error.message}`);
-    process.exit(1);
+    // Don't exit process in serverless as it might prevent logs or restart loops
+    // Instead, let the app handle the missing connection
   }
 };
 
