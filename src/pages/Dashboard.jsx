@@ -256,11 +256,7 @@ const Dashboard = ({ isDark, onThemeToggle, onStartTest, onLogout }) => {
 
             // Only show toast notifications on initial load, not during auto-refresh
             if (showLoading) {
-                if (processedTests.length > 0) {
-                    toast.success(`Loaded ${processedTests.length} published test(s)`);
-                } else {
-                    toast.info('No published tests available at the moment');
-                }
+                // Toasts removed per user request
             }
         } catch (error) {
             console.error('Failed to fetch tests:', error);

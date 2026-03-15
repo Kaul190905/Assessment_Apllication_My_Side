@@ -34,7 +34,7 @@ Expected: JSON array of published tests
      - Pass: `student123`
 3. **Verify Dashboard:**
    - Published tests appear in "Upcoming Tests"
-   - Toast shows "Loaded X published test(s)"
+   - Dashboard categorization works as expected
 4. **Take Test:**
    - Click "Start Test"
    - Review rules

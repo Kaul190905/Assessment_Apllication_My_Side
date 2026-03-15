@@ -215,7 +215,7 @@ assessment-application-master/
 
 ### **Check Browser Console**
 Open DevTools (F12) and look for:
-- ✅ "Loaded X published test(s)" toast
+- ✅ Fetches published tests from backend
 - ✅ No CORS errors
 - ✅ Successful API calls in Network tab
 
