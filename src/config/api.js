@@ -1,9 +1,21 @@
 import { MOCK_TESTS, MOCK_ATTEMPTS, MOCK_USER } from './mockData';
 
 // API base URL - points to your GradeFlow backend
-export const API_BASE_URL = (import.meta.env.PROD && !import.meta.env.VITE_API_BASE_URL) 
-  ? '/api' 
-  : (import.meta.env.VITE_API_BASE_URL || '/api');
+export const API_BASE_URL = (() => {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  const isProd = import.meta.env.PROD;
+  
+  // In production, if VITE_API_BASE_URL is missing or points to localhost, default to '/api'
+  if (isProd) {
+    if (!envUrl || envUrl.includes('localhost')) {
+      return '/api';
+    }
+    return envUrl;
+  }
+  
+  // In development, use environment variable or fallback to localhost
+  return envUrl || 'http://localhost:5000/api';
+})();
 
 
 // API endpoints
